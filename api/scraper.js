@@ -126,6 +126,107 @@ async function navigateWithCloudflareBypass(page, url, timeout = 45000) {
   await new Promise(r => setTimeout(r, 400));
 }
 
+// Universal HTML fetcher: works on Vercel Serverless (via Jina HTML Reader Cloudflare bypass) AND Localhost
+async function fetchPageHtml(url, timeoutMs = 25000) {
+  // 1. Primary fast serverless method (works on Vercel & Localhost without Chrome)
+  try {
+    const jinaUrl = url.includes('?')
+      ? `https://r.jina.ai/${encodeURIComponent(url)}`
+      : `https://r.jina.ai/${url}`;
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const res = await fetch(jinaUrl, {
+      headers: {
+        'X-Return-Format': 'html',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+
+    if (res.ok) {
+      const html = await res.text();
+      if (html && html.length > 1000 && !html.includes('Just a moment...')) {
+        return html;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Scraper] Serverless fetch note for ${url}:`, err.message);
+  }
+
+  // 2. Fallback to Local Chrome Puppeteer if available (localhost only)
+  if (CHROME_PATH) {
+    let page = null;
+    try {
+      const browser = await getBrowser();
+      page = await browser.newPage();
+      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+      await navigateWithCloudflareBypass(page, url, timeoutMs);
+      const html = await page.content();
+      return html;
+    } catch (err) {
+      console.error(`[Scraper] Puppeteer fallback error for ${url}:`, err.message);
+    } finally {
+      if (page) {
+        try { await page.close(); } catch (e) {}
+      }
+    }
+  }
+
+  return '';
+}
+
+// Resolve direct episode URL from slug so cold serverless starts on Vercel don't depend on in-memory slugToUrlMap
+function resolveDirectEpisodeUrl(episodeSlug) {
+  if (!episodeSlug) return '';
+  if (slugToUrlMap[episodeSlug]) return slugToUrlMap[episodeSlug];
+
+  const showSlug = episodeSlug
+    .replace(/-(sun|vijay|zee-tamil|colors-tamil)-(tv|serial|show).*$/i, '')
+    .replace(/-\d{2}-\d{2}-\d{4}.*$/, '')
+    .replace(/-day-\d+.*$/i, '')
+    .replace(/-serial.*$/i, '')
+    .replace(/-show.*$/i, '')
+    .replace(/-episode.*$/i, '');
+
+  // Check staticCatalog first
+  if (showSlug && staticCatalog) {
+    for (const ch of Object.keys(staticCatalog)) {
+      const matched = staticCatalog[ch].find(s => s.slug === showSlug || s.id === showSlug);
+      if (matched && matched.path) {
+        return `${BASE_URL}/${matched.path.replace(/^\/|\/$/g, '')}/${episodeSlug}/`;
+      }
+    }
+  }
+
+  // Infer from channel keywords in episodeSlug
+  if (showSlug) {
+    const lower = episodeSlug.toLowerCase();
+    if (lower.includes('vijay-tv-show') || lower.includes('bigg-boss')) {
+      return `${BASE_URL}/vijay-tv/vijay-tv-show/${showSlug}/${episodeSlug}/`;
+    }
+    if (lower.includes('vijay-tv')) {
+      return `${BASE_URL}/vijay-tv/vijay-tv-serial/${showSlug}/${episodeSlug}/`;
+    }
+    if (lower.includes('sun-tv-show')) {
+      return `${BASE_URL}/sun-tv/sun-tv-show/${showSlug}/${episodeSlug}/`;
+    }
+    if (lower.includes('sun-tv')) {
+      return `${BASE_URL}/sun-tv/sun-tv-serial/${showSlug}/${episodeSlug}/`;
+    }
+    if (lower.includes('zee-tamil-show')) {
+      return `${BASE_URL}/zee-tamil/zee-tamil-show/${showSlug}/${episodeSlug}/`;
+    }
+    if (lower.includes('zee-tamil')) {
+      return `${BASE_URL}/zee-tamil/zee-tamil-serial/${showSlug}/${episodeSlug}/`;
+    }
+  }
+
+  return `${BASE_URL}/?s=${encodeURIComponent(episodeSlug.replace(/-/g, ' '))}`;
+}
+
 // ----------------------------------------------------
 // 1. GET CHANNELS
 // ----------------------------------------------------
@@ -185,12 +286,7 @@ async function scrapeShows(channelSlug) {
   const url = `${BASE_URL}/${channelSlug}/`;
   const shows = [];
 
-  let page = null;
   try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
     // Handle Reality Shows special category aggregator
     if (channelSlug === 'reality-shows') {
       const realityUrls = [
@@ -201,8 +297,8 @@ async function scrapeShows(channelSlug) {
 
       for (const rUrl of realityUrls) {
         try {
-          await navigateWithCloudflareBypass(page, rUrl);
-          const rHtml = await page.content();
+          const rHtml = await fetchPageHtml(rUrl);
+          if (!rHtml) continue;
           const $$ = cheerio.load(rHtml);
 
           $$('.entry-content a, .content a, article a, main a').each((i, el) => {
@@ -234,8 +330,7 @@ async function scrapeShows(channelSlug) {
         }
       }
     } else {
-      await navigateWithCloudflareBypass(page, url);
-      const html = await page.content();
+      const html = await fetchPageHtml(url);
       const $ = cheerio.load(html);
 
       // Extract all serial links from the programs page
@@ -273,10 +368,6 @@ async function scrapeShows(channelSlug) {
     }
   } catch (err) {
     console.error(`[Scraper] Error scraping shows for ${channelSlug}:`, err.message);
-  } finally {
-    if (page) {
-      try { await page.close(); } catch(e) {}
-    }
   }
 
   if (shows.length > 0) {
@@ -337,16 +428,9 @@ async function scrapeEpisodes(showSlug, channelPath, pageNum = 1) {
   }
 
   const episodes = [];
-  let pageObj = null;
 
   try {
-    const browser = await getBrowser();
-    pageObj = await browser.newPage();
-    await pageObj.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
-    await navigateWithCloudflareBypass(pageObj, url);
-
-    const html = await pageObj.content();
+    const html = await fetchPageHtml(url);
     const $ = cheerio.load(html);
 
     $('article, .post-item, .entry, .post').each((i, el) => {
@@ -388,10 +472,6 @@ async function scrapeEpisodes(showSlug, channelPath, pageNum = 1) {
 
   } catch (err) {
     console.error(`[Scraper] Error scraping episodes for ${showSlug}:`, err.message);
-  } finally {
-    if (pageObj) {
-      try { await pageObj.close(); } catch(e) {}
-    }
   }
 
   if (episodes.length > 0) {
@@ -413,15 +493,7 @@ async function scrapeLatestEpisodes(pageNum = 1) {
   const episodes = [];
 
   try {
-    const browser = await getBrowser();
-    const pageObj = await browser.newPage();
-    await pageObj.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
-    await navigateWithCloudflareBypass(pageObj, targetUrl);
-
-    const html = await pageObj.content();
-    await pageObj.close();
-
+    const html = await fetchPageHtml(targetUrl);
     const $ = cheerio.load(html);
 
     // Tamildhool homepage lists posts inside article, .post or simply h3.entry-title
@@ -439,6 +511,8 @@ async function scrapeLatestEpisodes(pageNum = 1) {
 
       const parts = link.replace(/\/$/, '').split('/');
       const epSlug = parts[parts.length - 1] || '';
+
+      slugToUrlMap[epSlug] = link;
 
       // Determine channel
       let channelName = 'Tamil TV';
@@ -493,10 +567,7 @@ async function scrapeLatestEpisodes(pageNum = 1) {
 // 5. EXTRACT VIDEO EPISODE & DIRECT HLS / EMBED SOURCES
 // ----------------------------------------------------
 async function scrapeEpisodeVideo(episodeSlug, episodeUrl) {
-  let targetUrl = episodeUrl || slugToUrlMap[episodeSlug];
-  if (!targetUrl && episodeSlug) {
-    targetUrl = `${BASE_URL}/?s=${encodeURIComponent(episodeSlug.replace(/-/g, ' '))}`;
-  }
+  let targetUrl = episodeUrl || resolveDirectEpisodeUrl(episodeSlug);
 
   const effectiveKey = episodeSlug || (targetUrl ? targetUrl.replace(/^https?:\/\/[^\/]+\//, '').replace(/\/$/, '').split('/').pop() : 'default_video');
   const cacheKey = `video_${effectiveKey}`;
@@ -544,29 +615,26 @@ async function scrapeEpisodeVideo(episodeSlug, episodeUrl) {
   }
 
   try {
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
-    await navigateWithCloudflareBypass(page, targetUrl);
-
-    let html = await page.content();
+    let html = await fetchPageHtml(targetUrl);
     let $ = cheerio.load(html);
 
-    // If targetUrl was a search results page, find first matching episode post link and navigate to it
-    if (targetUrl.includes('?s=')) {
+    // If direct URL didn't have video= or was a search page, fall back to search query
+    if (targetUrl.includes('?s=') || (!html.includes('video=') && !html.includes('video_id=') && episodeSlug)) {
+      if (!targetUrl.includes('?s=')) {
+        const searchFallbackUrl = `${BASE_URL}/?s=${encodeURIComponent(episodeSlug.replace(/-/g, ' '))}`;
+        html = await fetchPageHtml(searchFallbackUrl);
+        $ = cheerio.load(html);
+      }
       const firstPostLink = $('article a[href*="-serial/"], article a[href*="-show/"], .entry-title a, h2 a, h3 a').first().attr('href');
       if (firstPostLink) {
         targetUrl = firstPostLink;
         slugToUrlMap[episodeSlug] = targetUrl;
-        await navigateWithCloudflareBypass(page, targetUrl);
-        html = await page.content();
+        html = await fetchPageHtml(targetUrl);
         $ = cheerio.load(html);
       }
     }
 
-    const pageTitle = await page.title();
-    await page.close();
+    const pageTitle = $('title').first().text().trim() || '';
 
     // Title
     result.title = $('.entry-title').first().text().trim() ||
@@ -611,7 +679,7 @@ async function scrapeEpisodeVideo(episodeSlug, episodeUrl) {
     // Extract showSlug and showPath from targetUrl or staticCatalog
     let derivedShowSlug = '';
     let derivedShowPath = '';
-    if (targetUrl) {
+    if (targetUrl && !targetUrl.includes('?s=')) {
       const uParts = targetUrl.replace(/^https?:\/\/[^\/]+\//, '').replace(/\/$/, '').split('/');
       if (uParts.length >= 2) {
         derivedShowSlug = uParts[uParts.length - 2];
@@ -707,16 +775,8 @@ async function searchSite(query) {
 
   const results = [];
   try {
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
     const searchUrl = `${BASE_URL}/?s=${encodeURIComponent(query)}`;
-    await navigateWithCloudflareBypass(page, searchUrl);
-
-    const html = await page.content();
-    await page.close();
-
+    const html = await fetchPageHtml(searchUrl);
     const $ = cheerio.load(html);
 
     $('article, .post-item, .entry').each((i, el) => {
