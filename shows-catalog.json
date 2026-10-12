@@ -1,0 +1,208 @@
+{
+  "vijay-tv-programs": [
+    {
+      "id": "ayyanar-thunai",
+      "title": "Ayyanar Thunai",
+      "slug": "ayyanar-thunai",
+      "path": "vijay-tv/vijay-tv-serial/ayyanar-thunai",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ayy.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/ayyanar-thunai/"
+    },
+    {
+      "id": "azhagae-azhagu",
+      "title": "Azhagae Azhagu",
+      "slug": "azhagae-azhagu",
+      "path": "vijay-tv/vijay-tv-serial/azhagae-azhagu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/02/azaz.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/azhagae-azhagu/"
+    },
+    {
+      "id": "chinna-marumagal",
+      "title": "Chinna Marumagal",
+      "slug": "chinna-marumagal",
+      "path": "vijay-tv/vijay-tv-serial/chinna-marumagal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/chinna.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/chinna-marumagal/"
+    },
+    {
+      "id": "kadhal-kadhal-kadhal",
+      "title": "Kadhal Kadhal Kadhal",
+      "slug": "kadhal-kadhal-kadhal",
+      "path": "vijay-tv/vijay-tv-serial/kadhal-kadhal-kadhal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/07/kkk.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kadhal-kadhal-kadhal/"
+    },
+    {
+      "id": "kana-kandenadi",
+      "title": "Kana Kandenadi",
+      "slug": "kana-kandenadi",
+      "path": "vijay-tv/vijay-tv-serial/kana-kandenadi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/01/kkd.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kana-kandenadi/"
+    },
+    {
+      "id": "kanmani-anbudan",
+      "title": "Kanmani Anbudan",
+      "slug": "kanmani-anbudan",
+      "path": "vijay-tv/vijay-tv-serial/kanmani-anbudan",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ka.webp",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kanmani-anbudan/"
+    },
+    {
+      "id": "mahanadhi",
+      "title": "Mahanadhi",
+      "slug": "mahanadhi",
+      "path": "vijay-tv/vijay-tv-serial/mahanadhi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/maha.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/mahanadhi/"
+    },
+    {
+      "id": "onna-irukka-kaththukkanum",
+      "title": "Onna Irukka Kaththukanum",
+      "slug": "onna-irukka-kaththukkanum",
+      "path": "vijay-tv/vijay-tv-serial/onna-irukka-kaththukkanum",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/06/oik.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/onna-irukka-kaththukkanum/"
+    },
+    {
+      "id": "pandian-stores-2",
+      "title": "Pandian Stores 2",
+      "slug": "pandian-stores-2",
+      "path": "vijay-tv/vijay-tv-serial/pandian-stores-2",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/pandian.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/pandian-stores-2/"
+    },
+    {
+      "id": "sindhu-bairavi-kacheri-arambam",
+      "title": "Sindhu Bairavi Kacheri Arambam",
+      "slug": "sindhu-bairavi-kacheri-arambam",
+      "path": "vijay-tv/vijay-tv-serial/sindhu-bairavi-kacheri-arambam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/shindhu-1.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/sindhu-bairavi-kacheri-arambam/"
+    },
+    {
+      "id": "siragadikka-aasai",
+      "title": "Siragadikka Aasai",
+      "slug": "siragadikka-aasai",
+      "path": "vijay-tv/vijay-tv-serial/siragadikka-aasai",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/sirshu.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/siragadikka-aasai/"
+    },
+    {
+      "id": "suttum-vizhi-sudare",
+      "title": "Suttum Vizhi Sudare",
+      "slug": "suttum-vizhi-sudare",
+      "path": "vijay-tv/vijay-tv-serial/suttum-vizhi-sudare",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/01/svs.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/suttum-vizhi-sudare/"
+    },
+    {
+      "id": "thaai-maaman",
+      "title": "Thaai Maaman",
+      "slug": "thaai-maaman",
+      "path": "vijay-tv/vijay-tv-serial/thaai-maaman",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/04/tm.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/thaai-maaman/"
+    },
+    {
+      "id": "thendrale-mella-pesu",
+      "title": "Thendrale Mella Pesu",
+      "slug": "thendrale-mella-pesu",
+      "path": "vijay-tv/vijay-tv-serial/thendrale-mella-pesu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/TMP.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/thendrale-mella-pesu/"
+    },
+    {
+      "id": "anda-ka-kasam-s4",
+      "title": "Anda Ka Kasam S4",
+      "slug": "anda-ka-kasam-s4",
+      "path": "vijay-tv/vijay-tv-show/anda-ka-kasam-s4",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/01/akksk.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/anda-ka-kasam-s4/"
+    },
+    {
+      "id": "bigg-boss-tamil-season-10",
+      "title": "Bigg Boss Tamil Season 10",
+      "slug": "bigg-boss-tamil-season-10",
+      "path": "vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/09/bbtamil.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10/"
+    },
+    {
+      "id": "bigg-boss-the-common-man",
+      "title": "Bigg Boss The Common Man",
+      "slug": "bigg-boss-the-common-man",
+      "path": "vijay-tv/vijay-tv-show/bigg-boss-the-common-man",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/08/comm.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/bigg-boss-the-common-man/"
+    },
+    {
+      "id": "connect-link-pannu-win-pannu",
+      "title": "Connect Link Pannu Win Pannu",
+      "slug": "connect-link-pannu-win-pannu",
+      "path": "vijay-tv/vijay-tv-show/connect-link-pannu-win-pannu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/06/connect.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/connect-link-pannu-win-pannu/"
+    },
+    {
+      "id": "cooku-with-comali-s7",
+      "title": "Cooku with Comali S7",
+      "slug": "cooku-with-comali-s7",
+      "path": "vijay-tv/vijay-tv-show/cooku-with-comali-s7",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/04/cwc7.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/cooku-with-comali-s7/"
+    },
+    {
+      "id": "happy-wife-happy-life",
+      "title": "Happy Wife Happy Life",
+      "slug": "happy-wife-happy-life",
+      "path": "vijay-tv/vijay-tv-show/happy-wife-happy-life",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/03/hwhl.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/happy-wife-happy-life/"
+    },
+    {
+      "id": "jodi-are-u-ready-s3",
+      "title": "Jodi Are U Ready S3",
+      "slug": "jodi-are-u-ready-s3",
+      "path": "vijay-tv/vijay-tv-show/jodi-are-u-ready-s3",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/02/jar.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/jodi-are-u-ready-s3/"
+    },
+    {
+      "id": "neeya-naana",
+      "title": "Neeya Naana",
+      "slug": "neeya-naana",
+      "path": "vijay-tv/vijay-tv-show/neeya-naana",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/nn.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/neeya-naana/"
+    },
+    {
+      "id": "second-love",
+      "title": "Second Love",
+      "slug": "second-love",
+      "path": "vijay-tv/vijay-tv-show/second-love",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/07/second.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/second-love/"
+    },
+    {
+      "id": "super-singer-junior",
+      "title": "Super Singer Junior",
+      "slug": "super-singer-junior",
+      "path": "vijay-tv/vijay-tv-show/super-singer-junior",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/05/ssj11.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/super-singer-junior/"
+    },
+    {
+      "id": "vijay-special-program",
+      "title": "Vijay Special Program",
+      "slug": "vijay-special-program",
+      "path": "vijay-tv/vijay-tv-show/vijay-special-program",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/09/sirappuvtv.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/vijay-special-program/"
+    }
+  ],
+  "sun-tv-programs": [],
+  "zee-tamil-programs": [],
+  "reality-vijay": [],
+  "reality-zee": []
+}

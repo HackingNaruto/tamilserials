@@ -1,0 +1,20 @@
+{
+  "name": "tamildhool-clone",
+  "version": "2.0.0",
+  "description": "Tamildhool clone with real scraper API using puppeteer-core",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "scrape-test": "node test-access.js"
+  },
+  "keywords": ["tamildhool", "scraper", "tamil-serials"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "puppeteer-core": "^23.0.0"
+  }
+}

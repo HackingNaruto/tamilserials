@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watch Episode - StreamX</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles.css?v=2.7.0">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="header">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+          <div class="brand-tag" data-app-tagline>HD Tamil Serials</div>
+        </div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li id="navHistoryItem" style="display:none;"><a href="index.html#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
+        <li><a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="nav-link" style="color: #ffb703; font-weight:700;"><i class="fa-solid fa-eye" style="color:#e50914;"></i> Bigg Boss</a></li>
+        <li><a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7&t=dmlqYXktdHYvdmlqYXktdHYtc2hvdy9iaWdnLWJvc3MtdGFtaWwtc2Vhc29uLTEwL2JpZ2ctYm9zcy10YW1pbC1zZWFzb24tMTAtbGl2ZS0yNC03" class="nav-link" style="color: #e50914; font-weight:700;"><i class="fa-solid fa-tower-broadcast fa-fade"></i> 24/7 LIVE</a></li>
+      </ul>
+
+      <!-- Theme Toggle & Search Bar -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="player-tool-btn" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer;">
+          <i class="fa-solid fa-sun"></i> Light Mode
+        </button>
+
+        <div class="search-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search serial, channel...">
+          <div id="searchResultsModal" class="search-results-modal"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Player Page Content -->
+  <main class="main-content">
+    <div class="watch-container" id="watchPlayerContainer">
+
+      <!-- Breadcrumbs -->
+      <div class="breadcrumbs" id="playerBreadcrumbs">
+        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <span>/</span>
+        <span>Loading...</span>
+      </div>
+
+      <!-- Player Box -->
+      <div class="player-card">
+        <!-- Video Screen Container -->
+        <div class="video-frame-container" id="videoPlayerFrame">
+          <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#888;">
+            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+          </div>
+        </div>
+
+        <!-- Server Controls Bar -->
+        <div class="server-bar">
+          <div class="server-list">
+            <span class="server-label"><i class="fa-solid fa-tower-broadcast"></i> SELECT SERVER:</span>
+            <div id="serverList" style="display:inline-flex; gap:6px; flex-wrap:wrap;">
+              <!-- Generated dynamically -->
+            </div>
+          </div>
+
+          <div class="player-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button class="player-tool-btn" id="cinemaLightBtn" onclick="toggleCinemaLights()">
+              <i class="fa-regular fa-lightbulb"></i> Lights OFF
+            </button>
+            <button class="player-tool-btn" id="theaterModeBtn" onclick="toggleTheaterMode()">
+              <i class="fa-solid fa-film"></i> Theater Mode
+            </button>
+            <a id="downloadStreamBtn" href="#" class="player-tool-btn" download style="display:none;">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Download Episode (HD)
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Previous / Next Episode Navigation -->
+      <div class="episode-nav-bar" id="epNavButtons">
+        <!-- Next / Prev Buttons -->
+      </div>
+
+      <!-- Episode Info Card -->
+      <div class="episode-info-card">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <span class="card-channel-badge" id="epChannelBadge" style="position:static;">Tamil TV</span>
+          <span style="color: var(--text-muted); font-size: 0.85rem;" id="epDate"></span>
+        </div>
+        <h1 class="episode-title-large" id="epTitle">Loading Episode...</h1>
+        <h3 style="color: var(--text-muted); font-size: 1rem; font-weight: 500;" id="epTamilTitle"></h3>
+        <p class="episode-desc" id="epDesc">Episode summary loading...</p>
+      </div>
+
+      <!-- OTT Related Episodes Section -->
+      <div class="related-section">
+        <div class="section-header" style="align-items: center;">
+          <div class="section-title-wrap">
+            <div class="section-bullet"></div>
+            <div>
+              <h2 class="section-title" id="shelfSectionTitle">More Episodes From This Serial</h2>
+              <p class="section-subtitle" id="shelfSubtitle">Catch up with previous episodes</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span id="shelfEpisodeCount" class="card-tag" style="background:#202431; color:var(--text-muted); position:static; font-size:0.75rem;">Loading...</span>
+            <button id="shelfSortBtn" onclick="toggleShelfSort()" class="player-tool-btn" style="border-radius: 20px; font-size: 0.76rem; padding: 5px 12px;">
+              <i class="fa-solid fa-arrow-down-short-wide"></i> <span id="sortBtnText">Newest First</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="cards-grid ott-episodes-grid" id="relatedEpisodesContainer">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Shelf Actions: Load More & Archive Link -->
+        <div id="shelfMoreWrap" style="text-align: center; margin-top: 1.5rem; display: none;">
+          <button id="shelfLoadMoreBtn" onclick="loadMoreShelfEpisodes()" class="player-tool-btn" style="padding: 10px 24px; font-size: 0.88rem; border-radius: 30px; background: rgba(229,9,20,0.15); border-color: var(--primary); color: #fff;">
+            <i class="fa-solid fa-angles-down"></i> Load More Older Episodes
+          </button>
+          <a id="shelfViewArchiveBtn" href="#" class="player-tool-btn" style="margin-left: 10px; padding: 10px 20px; font-size: 0.88rem; border-radius: 30px; text-decoration: none;">
+            <i class="fa-solid fa-folder-open"></i> View Full Serial Archive (Ep 1...)
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+        </div>
+      </div>
+      <p class="footer-disclaimer">
+        <span data-app-name>StreamX Tamil</span> - Fast HD streaming player with ultra-fast playback, theme toggle, and direct download support.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js?v=2.7.0"></script>
+</body>
+</html>

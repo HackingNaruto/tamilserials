@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Show Episodes Archive - StreamX</title>
+  <link rel="stylesheet" href="styles.css?v=2.7.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="config.js"></script>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="header">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+          <div class="brand-tag" data-app-tagline>HD Tamil Serials</div>
+        </div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li id="navHistoryItem" style="display:none;"><a href="index.html#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
+        <li><a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="nav-link" style="color: #ffb703; font-weight:700;"><i class="fa-solid fa-eye" style="color:#e50914;"></i> Bigg Boss</a></li>
+        <li><a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7&t=dmlqYXktdHYvdmlqYXktdHYtc2hvdy9iaWdnLWJvc3MtdGFtaWwtc2Vhc29uLTEwL2JpZ2ctYm9zcy10YW1pbC1zZWFzb24tMTAtbGl2ZS0yNC03" class="nav-link" style="color: #e50914; font-weight:700;"><i class="fa-solid fa-tower-broadcast fa-fade"></i> 24/7 LIVE</a></li>
+      </ul>
+
+      <!-- Theme Toggle & Search Bar -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="player-tool-btn" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer;">
+          <i class="fa-solid fa-sun"></i> Light Mode
+        </button>
+
+        <div class="search-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search serial, channel...">
+          <div id="searchResultsModal" class="search-results-modal"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- Show Detail Header Card -->
+    <div class="episode-info-card" style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+      <img id="showPoster" src="/api/image" alt="Show Poster" style="width: 220px; aspect-ratio: 16/9; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border);" onerror="this.src='/api/image'">
+      
+      <div style="flex: 1; min-width: 280px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <span class="card-channel-badge" id="showChannelBadge" style="position:static;">Tamil TV</span>
+          <span style="color: #ffb703; font-size: 0.85rem;" id="showTime"><i class="fa-regular fa-clock"></i> Daily Primetime</span>
+          <span style="color: var(--text-muted); font-size: 0.85rem;" id="showGenre">Serial / Show</span>
+        </div>
+
+        <h1 class="episode-title-large" id="showTitle">Loading Show...</h1>
+        <h3 style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.75rem;" id="showTamilTitle"></h3>
+        <p class="episode-desc" id="showDesc">Explore all episodes and watch online in HD quality.</p>
+      </div>
+    </div>
+
+    <!-- Episode Archive Grid -->
+    <section>
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <div class="section-bullet"></div>
+          <div>
+            <h2 class="section-title">All Episodes Archive</h2>
+            <p class="section-subtitle">Click any episode to stream</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="showEpisodesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Load More / Show More Button -->
+      <div id="loadMoreWrap" style="text-align: center; margin-top: 2.5rem; display: none;">
+        <button id="loadMoreBtn" onclick="loadMoreEpisodes()" class="server-btn" style="padding: 12px 32px; font-size: 0.95rem; font-weight: 700; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-angles-down"></i> Load More Episodes
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+        </div>
+      </div>
+      <p class="footer-disclaimer">
+        <span data-app-name>StreamX Tamil</span> - Fast HD streaming player with ultra-fast playback, theme toggle, and direct download support.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js?v=2.7.0"></script>
+</body>
+</html>

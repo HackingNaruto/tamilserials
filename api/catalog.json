@@ -1,0 +1,595 @@
+{
+  "vijay-tv-programs": [
+    {
+      "id": "bigg-boss-tamil-season-10",
+      "title": "Bigg Boss Tamil Season 10",
+      "slug": "bigg-boss-tamil-season-10",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/09/bbtamil.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10/"
+    },
+    {
+      "id": "chinna-marumagal",
+      "title": "Chinna Marumagal",
+      "slug": "chinna-marumagal",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/chinna-marumagal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/chinna.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/chinna-marumagal/"
+    },
+    {
+      "id": "mahanadhi",
+      "title": "Mahanadhi",
+      "slug": "mahanadhi",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/mahanadhi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/maha.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/mahanadhi/"
+    },
+    {
+      "id": "pandian-stores-2",
+      "title": "Pandian Stores 2",
+      "slug": "pandian-stores-2",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/pandian-stores-2",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/pandian.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/pandian-stores-2/"
+    },
+    {
+      "id": "siragadikka-aasai",
+      "title": "Siragadikka Aasai",
+      "slug": "siragadikka-aasai",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/siragadikka-aasai",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/sirshu.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/siragadikka-aasai/"
+    },
+    {
+      "id": "ayyanar-thunai",
+      "title": "Ayyanar Thunai",
+      "slug": "ayyanar-thunai",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/ayyanar-thunai",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ayy.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/ayyanar-thunai/"
+    },
+    {
+      "id": "azhagae-azhagu",
+      "title": "Azhagae Azhagu",
+      "slug": "azhagae-azhagu",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/azhagae-azhagu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/02/azaz.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/azhagae-azhagu/"
+    },
+    {
+      "id": "kadhal-kadhal-kadhal",
+      "title": "Kadhal Kadhal Kadhal",
+      "slug": "kadhal-kadhal-kadhal",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/kadhal-kadhal-kadhal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/07/kkk.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kadhal-kadhal-kadhal/"
+    },
+    {
+      "id": "kana-kandenadi",
+      "title": "Kana Kandenadi",
+      "slug": "kana-kandenadi",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/kana-kandenadi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/01/kkd.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kana-kandenadi/"
+    },
+    {
+      "id": "kanmani-anbudan",
+      "title": "Kanmani Anbudan",
+      "slug": "kanmani-anbudan",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/kanmani-anbudan",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ka.webp",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/kanmani-anbudan/"
+    },
+    {
+      "id": "onna-irukka-kaththukkanum",
+      "title": "Onna Irukka Kaththukanum",
+      "slug": "onna-irukka-kaththukkanum",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/onna-irukka-kaththukkanum",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/06/oik.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/onna-irukka-kaththukkanum/"
+    },
+    {
+      "id": "sindhu-bairavi-kacheri-arambam",
+      "title": "Sindhu Bairavi Kacheri Arambam",
+      "slug": "sindhu-bairavi-kacheri-arambam",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/sindhu-bairavi-kacheri-arambam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/shindhu-1.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/sindhu-bairavi-kacheri-arambam/"
+    },
+    {
+      "id": "suttum-vizhi-sudare",
+      "title": "Suttum Vizhi Sudare",
+      "slug": "suttum-vizhi-sudare",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/suttum-vizhi-sudare",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/01/svs.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/suttum-vizhi-sudare/"
+    },
+    {
+      "id": "thaai-maaman",
+      "title": "Thaai Maaman",
+      "slug": "thaai-maaman",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/thaai-maaman",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/tm.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/thaai-maaman/"
+    },
+    {
+      "id": "thangamagal",
+      "title": "Thangamagal",
+      "slug": "thangamagal",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-serial/thangamagal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/thangam.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-serial/thangamagal/"
+    },
+    {
+      "id": "neeya-naana",
+      "title": "Neeya Naana",
+      "slug": "neeya-naana",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-show/neeya-naana",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/neeya.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/neeya-naana/"
+    },
+    {
+      "id": "super-singer",
+      "title": "Super Singer Season 10",
+      "slug": "super-singer-season-10",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-show/super-singer-season-10",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ss10.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/super-singer-season-10/"
+    },
+    {
+      "id": "cooku-with-comali",
+      "title": "Cooku With Comali Season 5",
+      "slug": "cooku-with-comali-season-5",
+      "channelSlug": "vijay-tv-programs",
+      "path": "vijay-tv/vijay-tv-show/cooku-with-comali-season-5",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/cwc5.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/cooku-with-comali-season-5/"
+    }
+  ],
+  "sun-tv-programs": [
+    {
+      "id": "kayal",
+      "title": "Kayal",
+      "slug": "kayal",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/kayal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Kayal.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/kayal/"
+    },
+    {
+      "id": "singappenne",
+      "title": "Singappenne",
+      "slug": "singappenne",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/singappenne",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Singapenne.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/singappenne/"
+    },
+    {
+      "id": "malli",
+      "title": "Malli",
+      "slug": "malli",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/malli",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Malli.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/malli/"
+    },
+    {
+      "id": "ethir-neechal-thodargirathu",
+      "title": "Ethir Neechal Thodargirathu",
+      "slug": "ethir-neechal-thodargirathu",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/ethir-neechal-thodargirathu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Ethir-Neechal.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/ethir-neechal-thodargirathu/"
+    },
+    {
+      "id": "marumagal",
+      "title": "Marumagal",
+      "slug": "marumagal",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/marumagal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Marumagal.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/marumagal/"
+    },
+    {
+      "id": "moondru-mudichu",
+      "title": "Moondru Mudichu",
+      "slug": "moondru-mudichu",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/moondru-mudichu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Moondru-Mudichu.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/moondru-mudichu/"
+    },
+    {
+      "id": "lakshmi",
+      "title": "Lakshmi",
+      "slug": "lakshmi",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/lakshmi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Lakshmi.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/lakshmi/"
+    },
+    {
+      "id": "abirami",
+      "title": "Abirami",
+      "slug": "abirami",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/abirami",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Abirami.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/abirami/"
+    },
+    {
+      "id": "annam",
+      "title": "Annam",
+      "slug": "annam",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/annam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Annam.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/annam/"
+    },
+    {
+      "id": "iru-malargal",
+      "title": "Iru Malargal",
+      "slug": "iru-malargal",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/iru-malargal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Iru-Malargal.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/iru-malargal/"
+    },
+    {
+      "id": "kurinji",
+      "title": "Kurinji",
+      "slug": "kurinji",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/kurinji",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Kurinji.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/kurinji/"
+    },
+    {
+      "id": "poongodi",
+      "title": "Poongodi",
+      "slug": "poongodi",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/poongodi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Poongodi.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/poongodi/"
+    },
+    {
+      "id": "pudhu-vasantham",
+      "title": "Pudhu Vasantham",
+      "slug": "pudhu-vasantham",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/pudhu-vasantham",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Pudhu-Vasantham.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/pudhu-vasantham/"
+    },
+    {
+      "id": "siragugal",
+      "title": "Siragugal",
+      "slug": "siragugal",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/siragugal",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Siragugal.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/siragugal/"
+    },
+    {
+      "id": "thulasi",
+      "title": "Thulasi",
+      "slug": "thulasi",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/thulasi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Thulasi.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/thulasi/"
+    },
+    {
+      "id": "vinodhini",
+      "title": "Vinodhini",
+      "slug": "vinodhini",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-serial/vinodhini",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Vinodhini.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-serial/vinodhini/"
+    },
+    {
+      "id": "kitchen-galatta",
+      "title": "Kitchen Galatta",
+      "slug": "kitchen-galatta",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-show/kitchen-galatta",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Kitchen-Galatta.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-show/kitchen-galatta/"
+    },
+    {
+      "id": "sun-singer",
+      "title": "Sun Singer",
+      "slug": "sun-singer",
+      "channelSlug": "sun-tv-programs",
+      "path": "sun-tv/sun-tv-show/sun-singer",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Sun-Singer.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-show/sun-singer/"
+    }
+  ],
+  "zee-tamil-programs": [
+    {
+      "id": "karthigai-deepam",
+      "title": "Karthigai Deepam",
+      "slug": "karthigai-deepam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/karthigai-deepam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Karthigai-Deepam.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/karthigai-deepam/"
+    },
+    {
+      "id": "sandhya-raagam",
+      "title": "Sandhya Raagam",
+      "slug": "sandhya-raagam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/sandhya-raagam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Sandhya-Raagam.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/sandhya-raagam/"
+    },
+    {
+      "id": "annamalai-kudumbam",
+      "title": "Annamalai Kudumbam",
+      "slug": "annamalai-kudumbam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/annamalai-kudumbam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Annamalai.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/annamalai-kudumbam/"
+    },
+    {
+      "id": "aval-varuvala",
+      "title": "Aval Varuvala",
+      "slug": "aval-varuvala",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/aval-varuvala",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Aval-Varuvala.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/aval-varuvala/"
+    },
+    {
+      "id": "ayali",
+      "title": "Ayali",
+      "slug": "ayali",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/ayali",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Ayali.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/ayali/"
+    },
+    {
+      "id": "chinnan-siru-kiliye",
+      "title": "Chinnan Siru Kiliye",
+      "slug": "chinnan-siru-kiliye",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/chinnan-siru-kiliye",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Chinnan.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/chinnan-siru-kiliye/"
+    },
+    {
+      "id": "enna-solla-pogirai",
+      "title": "Enna Solla Pogirai",
+      "slug": "enna-solla-pogirai",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/enna-solla-pogirai",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Enna-Solla.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/enna-solla-pogirai/"
+    },
+    {
+      "id": "getti-melam",
+      "title": "Getti Melam",
+      "slug": "getti-melam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/getti-melam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Getti.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/getti-melam/"
+    },
+    {
+      "id": "idhayam",
+      "title": "Idhayam",
+      "slug": "idhayam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/idhayam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Idhayam.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/idhayam/"
+    },
+    {
+      "id": "paarijatham",
+      "title": "Paarijatham",
+      "slug": "paarijatham",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/paarijatham",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Paarijatham.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/paarijatham/"
+    },
+    {
+      "id": "salangai-oli",
+      "title": "Salangai Oli",
+      "slug": "salangai-oli",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/salangai-oli",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Salangai.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/salangai-oli/"
+    },
+    {
+      "id": "samanthi",
+      "title": "Samanthi",
+      "slug": "samanthi",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/samanthi",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Samanthi.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/samanthi/"
+    },
+    {
+      "id": "thirumangalyam",
+      "title": "Thirumangalyam",
+      "slug": "thirumangalyam",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/thirumangalyam",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Thirumangalyam.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/thirumangalyam/"
+    },
+    {
+      "id": "vaagai-sooda-vaa",
+      "title": "Vaagai Sooda Vaa",
+      "slug": "vaagai-sooda-vaa",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/vaagai-sooda-vaa",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Vaagai.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/vaagai-sooda-vaa/"
+    },
+    {
+      "id": "varisu",
+      "title": "Varisu",
+      "slug": "varisu",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/varisu",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Varisu.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/varisu/"
+    },
+    {
+      "id": "vasudha",
+      "title": "Vasudha",
+      "slug": "vasudha",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/vasudha",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Vasudha.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/vasudha/"
+    },
+    {
+      "id": "veera",
+      "title": "Veera",
+      "slug": "veera",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-serial/veera",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Veera.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-serial/veera/"
+    },
+    {
+      "id": "saregamapa-seniors",
+      "title": "Sa Re Ga Ma Pa Seniors",
+      "slug": "saregamapa-seniors",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-show/saregamapa-seniors",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Saregamapa.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/saregamapa-seniors/"
+    },
+    {
+      "id": "tamizha-tamizha-s3",
+      "title": "Tamizha Tamizha Season 3",
+      "slug": "tamizha-tamizha-s3",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-show/tamizha-tamizha-s3",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Tamizha.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/tamizha-tamizha-s3/"
+    },
+    {
+      "id": "dance-jodi-dance",
+      "title": "Dance Jodi Dance",
+      "slug": "dance-jodi-dance",
+      "channelSlug": "zee-tamil-programs",
+      "path": "zee-tamil/zee-tamil-show/dance-jodi-dance",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Dance-Jodi.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/dance-jodi-dance/"
+    }
+  ],
+  "reality-shows": [
+    {
+      "id": "bigg-boss-tamil-season-10",
+      "title": "Bigg Boss Tamil Season 10 (Daily & 24/7 Live)",
+      "slug": "bigg-boss-tamil-season-10",
+      "channelSlug": "reality-shows",
+      "path": "vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2026/09/bbtamil.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10/"
+    },
+    {
+      "id": "saregamapa-seniors",
+      "title": "Sa Re Ga Ma Pa Seniors",
+      "slug": "saregamapa-seniors",
+      "channelSlug": "reality-shows",
+      "path": "zee-tamil/zee-tamil-show/saregamapa-seniors",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Saregamapa.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/saregamapa-seniors/"
+    },
+    {
+      "id": "tamizha-tamizha-s3",
+      "title": "Tamizha Tamizha Season 3",
+      "slug": "tamizha-tamizha-s3",
+      "channelSlug": "reality-shows",
+      "path": "zee-tamil/zee-tamil-show/tamizha-tamizha-s3",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Tamizha.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/tamizha-tamizha-s3/"
+    },
+    {
+      "id": "cooku-with-comali",
+      "title": "Cooku With Comali Season 5",
+      "slug": "cooku-with-comali-season-5",
+      "channelSlug": "reality-shows",
+      "path": "vijay-tv/vijay-tv-show/cooku-with-comali-season-5",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/cwc5.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/cooku-with-comali-season-5/"
+    },
+    {
+      "id": "super-singer",
+      "title": "Super Singer Season 10",
+      "slug": "super-singer-season-10",
+      "channelSlug": "reality-shows",
+      "path": "vijay-tv/vijay-tv-show/super-singer-season-10",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/ss10.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/super-singer-season-10/"
+    },
+    {
+      "id": "neeya-naana",
+      "title": "Neeya Naana",
+      "slug": "neeya-naana",
+      "channelSlug": "reality-shows",
+      "path": "vijay-tv/vijay-tv-show/neeya-naana",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/neeya.jpg",
+      "url": "https://www.tamildhool.tech/vijay-tv/vijay-tv-show/neeya-naana/"
+    },
+    {
+      "id": "dance-jodi-dance",
+      "title": "Dance Jodi Dance",
+      "slug": "dance-jodi-dance",
+      "channelSlug": "reality-shows",
+      "path": "zee-tamil/zee-tamil-show/dance-jodi-dance",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Dance-Jodi.jpg",
+      "url": "https://www.tamildhool.tech/zee-tamil/zee-tamil-show/dance-jodi-dance/"
+    },
+    {
+      "id": "kitchen-galatta",
+      "title": "Kitchen Galatta",
+      "slug": "kitchen-galatta",
+      "channelSlug": "reality-shows",
+      "path": "sun-tv/sun-tv-show/kitchen-galatta",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Kitchen-Galatta.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-show/kitchen-galatta/"
+    },
+    {
+      "id": "sun-singer",
+      "title": "Sun Singer",
+      "slug": "sun-singer",
+      "channelSlug": "reality-shows",
+      "path": "sun-tv/sun-tv-show/sun-singer",
+      "thumbnail": "https://www.tamildhool.tech/wp-content/uploads/2025/07/Sun-Singer.jpg",
+      "url": "https://www.tamildhool.tech/sun-tv/sun-tv-show/sun-singer/"
+    }
+  ]
+}

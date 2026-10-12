@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-app-name>StreamX Tamil - HD Serials & Shows Streaming</title>
+  <meta name="description" content="Watch Vijay TV, Sun TV, Zee Tamil and Colors Tamil serials, daily episodes, and reality shows online.">
+  <link rel="stylesheet" href="styles.css?v=2.7.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="header">
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+          <div class="brand-tag" data-app-tagline>HD Tamil Serials</div>
+        </div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="index.html" class="nav-link active"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li id="navHistoryItem" style="display:none;"><a href="#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
+        <li><a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="nav-link" style="color: #ffb703; font-weight:700;"><i class="fa-solid fa-eye" style="color:#e50914;"></i> Bigg Boss</a></li>
+        <li><a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7&t=dmlqYXktdHYvdmlqYXktdHYtc2hvdy9iaWdnLWJvc3MtdGFtaWwtc2Vhc29uLTEwL2JpZ2ctYm9zcy10YW1pbC1zZWFzb24tMTAtbGl2ZS0yNC03" class="nav-link" style="color: #e50914; font-weight:700;"><i class="fa-solid fa-tower-broadcast fa-fade"></i> 24/7 LIVE</a></li>
+        <li><a href="#today-section" class="nav-link"><i class="fa-solid fa-calendar-day"></i> Today's Episodes</a></li>
+        <li><a href="#popular-shows" class="nav-link"><i class="fa-solid fa-fire"></i> Popular Shows</a></li>
+      </ul>
+
+      <!-- Theme Toggle & Search Bar -->
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="player-tool-btn" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer;">
+          <i class="fa-solid fa-sun"></i> Light Mode
+        </button>
+
+        <div class="search-wrapper">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search serial, channel...">
+          <div id="searchResultsModal" class="search-results-modal"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main class="main-content">
+
+    <!-- Dedicated Bigg Boss Tamil 24/7 Live Stream Spotlight Card -->
+    <div class="hero-spotlight" style="min-height: 240px; margin-bottom: 2rem; border-color: rgba(229,9,20,0.4); box-shadow: 0 10px 30px rgba(229,9,20,0.2); background: linear-gradient(135deg, rgba(229,9,20,0.92) 0%, rgba(15,17,25,0.95) 70%), url('/api/image?url=https%3A%2F%2Fwww.tamildhool.tech%2Fwp-content%2Fuploads%2F2026%2F09%2Fbb24.jpg'); background-size: cover; background-position: center;">
+      <div class="hero-overlay" style="background: rgba(0,0,0,0.45);"></div>
+      <div class="hero-body" style="max-width: 720px;">
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <span class="hero-badge" style="background: #e50914;"><i class="fa-solid fa-tower-broadcast fa-fade"></i> 24/7 LIVE STREAM</span>
+          <span class="hero-badge" style="background: #ffb703; color: #000;"><i class="fa-solid fa-star"></i> Season 10 Special</span>
+        </div>
+        <h2 style="font-size: 2.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Bigg Boss Tamil Season 10</h2>
+        <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 1.25rem;">Watch Bigg Boss Tamil 24/7 uninterrupted live stream non-stop without TV cuts, plus all daily episodes & uncuts in HD quality.</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7&t=dmlqYXktdHYvdmlqYXktdHYtc2hvdy9iaWdnLWJvc3MtdGFtaWwtc2Vhc29uLTEwL2JpZ2ctYm9zcy10YW1pbC1zZWFzb24tMTAtbGl2ZS0yNC03" class="btn btn-primary" style="background: #e50914; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-play"></i> Watch 24/7 Live Stream
+          </a>
+          <a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-list"></i> All Day-by-Day Episodes
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Continue Watching / Watch History Section -->
+    <section id="history-section" style="display: none; margin-bottom: 2.25rem;">
+      <div class="section-header" style="align-items: center;">
+        <div class="section-title-wrap">
+          <div class="section-bullet" style="background: #00d26a;"></div>
+          <div>
+            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-clock-rotate-left" style="color: #00d26a; font-size: 1.15rem;"></i> Continue Watching
+            </h2>
+            <p class="section-subtitle">Pick up right where you left off</p>
+          </div>
+        </div>
+        <button onclick="clearWatchHistory()" class="player-tool-btn" style="border-radius: 20px; font-size: 0.78rem; padding: 5px 14px;">
+          <i class="fa-solid fa-trash-can"></i> Clear History
+        </button>
+      </div>
+
+      <div class="cards-grid continue-watching-grid" id="historyCardsContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Channel Pills Category Filter -->
+    <div class="channel-pills-bar" id="channelPillsContainer">
+      <button class="channel-pill active" onclick="filterByChannel('all', this)">
+        <i class="fa-solid fa-layer-group"></i> All Channels
+      </button>
+      <button class="channel-pill" onclick="filterByChannel('bigg-boss', this)" style="border: 1px solid rgba(229,9,20,0.4); color: #ff5252;">
+        <i class="fa-solid fa-eye"></i> Bigg Boss Tamil
+      </button>
+      <button class="channel-pill" onclick="filterByChannel('vijay-tv', this)">
+        <i class="fa-solid fa-tv"></i> Vijay TV
+      </button>
+      <button class="channel-pill" onclick="filterByChannel('sun-tv', this)">
+        <i class="fa-solid fa-tv"></i> Sun TV
+      </button>
+      <button class="channel-pill" onclick="filterByChannel('zee-tamil', this)">
+        <i class="fa-solid fa-tv"></i> Zee Tamil
+      </button>
+      <button class="channel-pill" onclick="filterByChannel('reality-shows', this)" style="border: 1px solid rgba(246,130,31,0.4); color: #f6821f;">
+        <i class="fa-solid fa-trophy"></i> Reality Shows
+      </button>
+    </div>
+
+    <!-- Latest Episodes / Serials Section -->
+    <section id="today-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <div class="section-bullet"></div>
+          <div>
+            <h2 class="section-title" id="homeSectionHeading">Latest Episodes</h2>
+            <p class="section-subtitle" id="homeSectionSub">Direct stream latest episodes or switch to full serial archives</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="viewEpisodesBtn" class="player-tool-btn active" onclick="switchHomeView('episodes')" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem;">
+            <i class="fa-solid fa-circle-play"></i> Latest Episodes
+          </button>
+          <button id="viewSerialsBtn" class="player-tool-btn" onclick="switchHomeView('serials')" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem;">
+            <i class="fa-solid fa-folder-open"></i> By Serial (Archive)
+          </button>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="episodesContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <!-- Show More Episodes Button -->
+      <div id="homeLoadMoreWrap" style="text-align: center; margin-top: 2.5rem; display: none;">
+        <button id="homeLoadMoreBtn" onclick="loadMoreHomeEpisodes()" class="server-btn" style="padding: 12px 32px; font-size: 0.95rem; font-weight: 700; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-angles-down"></i> Show More Episodes
+        </button>
+      </div>
+    </section>
+
+    <!-- Popular Shows / Serials Archive -->
+    <section id="popular-shows">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <div class="section-bullet"></div>
+          <div>
+            <h2 class="section-title">Popular TV Serials & Shows</h2>
+            <p class="section-subtitle">Select a show to browse past episodes archive</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="popularShowsContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="brand">
+        <div class="brand-icon">SX</div>
+        <div class="brand-text">
+          <div class="brand-title">STREAM<span>X</span></div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="#today-section">Today's Episodes</a>
+        <a href="#popular-shows">Popular Serials</a>
+        <a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10">Bigg Boss</a>
+        <a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7">24/7 LIVE Stream</a>
+      </div>
+      <p class="footer-disclaimer">
+        <span data-app-name>StreamX Tamil</span> - HD Tamil serials streaming web application. All media content belongs to respective copyright owners.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js?v=2.7.0"></script>
+</body>
+</html>
