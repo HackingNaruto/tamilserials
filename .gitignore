@@ -1,5 +1,5 @@
 node_modules/
-.DS_Store
-Thumbs.db
-*.log
+.scraper_session/
 .env
+.vercel
+*.log
