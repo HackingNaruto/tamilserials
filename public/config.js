@@ -85,10 +85,10 @@ function updateThemeButton(theme) {
   const btn = document.getElementById('themeToggleBtn');
   if (btn) {
     if (theme === 'light') {
-      btn.innerHTML = `<i class="fa-solid fa-moon"></i> Dark Mode`;
+      btn.innerHTML = `<i class="fa-solid fa-moon"></i> <span class="theme-btn-text">Dark Mode</span>`;
       btn.title = 'Switch to Dark Mode';
     } else {
-      btn.innerHTML = `<i class="fa-solid fa-sun"></i> Light Mode`;
+      btn.innerHTML = `<i class="fa-solid fa-sun"></i> <span class="theme-btn-text">Light Mode</span>`;
       btn.title = 'Switch to Light Mode';
     }
   }

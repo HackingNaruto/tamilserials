@@ -186,6 +186,51 @@ body.cinema-lights-off .episode-info-card:hover {
   color: var(--primary);
 }
 
+/* Nav Tools & Theme Toggle */
+.nav-tools-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#themeToggleBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0 16px;
+  height: 38px;
+  border-radius: 30px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: var(--transition);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+#themeToggleBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] #themeToggleBtn {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1e293b;
+}
+
+[data-theme="light"] #themeToggleBtn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+}
+
 /* Search Bar */
 .search-wrapper {
   position: relative;
@@ -1175,6 +1220,95 @@ body.cinema-lights-off .episode-info-card:hover {
     font-size: 0.78rem;
     padding: 6px 12px;
   }
+
+  /* OTT Mobile Portrait Video Controls (Progress Bar & Duration Overhaul) */
+  .plyr__controls {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    padding: 8px 12px 10px 12px !important;
+    gap: 4px !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 65%, transparent 100%) !important;
+  }
+
+  /* Full Width Progress Bar spanning across Row 1 */
+  .plyr__controls .plyr__progress__container {
+    order: 1 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    margin-bottom: 6px !important;
+    padding: 4px 0 !important;
+  }
+
+  .plyr__progress {
+    height: 6px !important;
+  }
+
+  .plyr__progress input[type="range"] {
+    height: 6px !important;
+  }
+
+  .plyr__progress__buffer {
+    height: 6px !important;
+    border-radius: 3px !important;
+  }
+
+  .plyr--video .plyr__progress__buffer {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+
+  .plyr__progress input[type="range"]::-webkit-slider-thumb {
+    width: 15px !important;
+    height: 15px !important;
+    border-radius: 50% !important;
+    background: #e50914 !important;
+    box-shadow: 0 0 10px rgba(229, 9, 20, 0.9) !important;
+  }
+
+  /* Row 2: Play/Pause, Time, Settings, Fullscreen */
+  .plyr__controls [data-plyr="play"] {
+    order: 2 !important;
+  }
+
+  .plyr__controls .plyr__time--current {
+    order: 3 !important;
+    padding: 0 2px 0 6px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+  }
+
+  .plyr__controls .plyr__time--duration {
+    order: 4 !important;
+    padding: 0 6px 0 0 !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    margin-right: auto !important;
+  }
+
+  .plyr__controls .plyr__time--current::after {
+    content: "/";
+    margin-left: 5px;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .plyr__controls .plyr__menu {
+    order: 5 !important;
+  }
+
+  .plyr__controls [data-plyr="fullscreen"] {
+    order: 6 !important;
+  }
+
+  /* Hide clutter in mobile portrait */
+  .plyr__controls [data-plyr="restart"],
+  .plyr__controls [data-plyr="rewind"],
+  .plyr__controls [data-plyr="fast-forward"],
+  .plyr__controls [data-plyr="pip"],
+  .plyr__controls [data-plyr="airplay"],
+  .plyr__controls .plyr__volume {
+    display: none !important;
+  }
 }
 
 /* =========================================
@@ -1995,30 +2129,31 @@ body.cinema-lights-off .episode-info-card:hover {
    ========================================= */
 .gesture-hud-pill {
   position: absolute;
-  top: 50%;
+  top: 18px;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
-  background: rgba(10, 12, 18, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -6px) scale(0.95);
+  background: rgba(14, 18, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #fff;
-  padding: 10px 22px;
-  border-radius: 30px;
-  font-size: 1rem;
-  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   z-index: 85;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .gesture-hud-pill.show {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, 0) scale(1);
 }
 
 /* Double-Tap Wave Ripple */

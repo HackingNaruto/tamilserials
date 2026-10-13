@@ -1337,6 +1337,7 @@ let unlockTimeout = null;
 let hudTimeout = null;
 
 function showPlayerHud(text, iconClass = 'fa-play') {
+  if (!text || text.startsWith('Play') || text.startsWith('Pause')) return; // Do not disturb video playback
   const hud = document.getElementById('gestureHudPill');
   const icon = document.getElementById('gestureHudIcon');
   const label = document.getElementById('gestureHudText');
@@ -1349,7 +1350,7 @@ function showPlayerHud(text, iconClass = 'fa-play') {
   clearTimeout(hudTimeout);
   hudTimeout = setTimeout(() => {
     hud.classList.remove('show');
-  }, 900);
+  }, 650);
 }
 
 function triggerGestureRipple(side) {
@@ -1519,7 +1520,7 @@ function attachPlayerGestures(host, video) {
     return !plyrContainer.classList.contains('plyr--hide-controls');
   }
 
-  function showPlayerControls(autoHideMs = 4000) {
+  function showPlayerControls(autoHideMs = 7000) {
     const playerHost = document.getElementById('videoPlayerFrame');
     const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
     if (!plyrContainer) return;
@@ -1537,6 +1538,13 @@ function attachPlayerGestures(host, video) {
 
     if (autoHideMs > 0) {
       playerControlsTimer = setTimeout(() => {
+        // Keep visible if user is interacting with settings menu
+        const isMenuOpen = plyrContainer.querySelector('.plyr__menu--active') ||
+                           plyrContainer.querySelector('.plyr__menu[aria-expanded="true"]');
+        if (isMenuOpen) {
+          showPlayerControls(7000);
+          return;
+        }
         if (video && video.paused) return; // Keep controls visible while paused
         hidePlayerControls();
       }, autoHideMs);
@@ -1550,6 +1558,10 @@ function attachPlayerGestures(host, video) {
 
     if (video && video.paused) return; // Never hide controls while paused
 
+    const isMenuOpen = plyrContainer.querySelector('.plyr__menu--active') ||
+                       plyrContainer.querySelector('.plyr__menu[aria-expanded="true"]');
+    if (isMenuOpen) return;
+
     plyrContainer.classList.add('plyr--hide-controls');
     const rotateBtn = document.getElementById('fsRotateBtn');
     const lockBtn = document.getElementById('fsLockBtn');
@@ -1561,13 +1573,23 @@ function attachPlayerGestures(host, video) {
     if (isPlayerControlsVisible()) {
       hidePlayerControls();
     } else {
-      showPlayerControls(4000);
+      showPlayerControls(7000);
     }
   }
 
   // Keep controls alive when playing or pausing
-  video.addEventListener('play', () => showPlayerControls(4000));
+  video.addEventListener('play', () => showPlayerControls(7000));
   video.addEventListener('pause', () => showPlayerControls(0));
+
+  // Keep controls alive on any touch inside plyr__controls
+  const controlsEl = host.querySelector('.plyr__controls');
+  if (controlsEl) {
+    ['touchstart', 'pointerdown', 'mousedown', 'input', 'change'].forEach(evName => {
+      controlsEl.addEventListener(evName, () => {
+        showPlayerControls(7000);
+      }, { passive: true });
+    });
+  }
 
   function toggleVideoPlayPause() {
     if (!video) return;
@@ -1577,15 +1599,13 @@ function attachPlayerGestures(host, video) {
       } else {
         video.play();
       }
-      showPlayerHud('Play ▶', 'fa-play');
-      showPlayerControls(4000);
+      showPlayerControls(7000);
     } else {
       if (plyrInstance && typeof plyrInstance.pause === 'function') {
         plyrInstance.pause();
       } else {
         video.pause();
       }
-      showPlayerHud('Pause ⏸', 'fa-pause');
       showPlayerControls(0);
     }
   }
@@ -2168,6 +2188,7 @@ function switchServer(idx, btnEl) {
       ],
       hideControls: false, // We control auto-hide smoothly without Plyr abrupt conflicts
       clickToPlay: false,
+      toggleControls: false,
       settings: ['speed'],
       speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
       seekTime: 10,
