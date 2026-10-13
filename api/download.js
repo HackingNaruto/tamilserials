@@ -1,6 +1,6 @@
-// Direct Episode Video (.MP4) Download Endpoint
-// Remuxes HLS stream on-the-fly to MP4 format using FFmpeg
-// so users get a single playable .mp4 video file instead of .m3u8 playlist
+// Direct Episode Video Download Endpoint
+// Supports Vercel Serverless (no FFmpeg required) + Local FFmpeg remuxing
+// Supports direct MP4/TS stream and 1DM/VLC/ADM playlist downloads
 
 const { spawn } = require('child_process');
 
@@ -22,8 +22,8 @@ module.exports = async (req, res) => {
   const rawTitle = title || slug || `Episode-${videoId}`;
   const safeFilename = rawTitle.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'streamx_episode';
 
-  // If user explicitly asks for m3u8 playlist file
-  if (format === 'm3u8') {
+  // 1. M3U8 Playlist download (for 1DM, ADM, VLC, MX Player on Android / iOS)
+  if (format === 'm3u8' || format === 'playlist') {
     try {
       const upstreamRes = await fetch(localHlsUrl);
       if (!upstreamRes.ok) return res.status(502).send('Stream not available');
@@ -35,39 +35,98 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.m3u8"`);
       return res.status(200).send(m3u8Content);
     } catch (e) {
-      return res.status(500).send('Playlist error');
+      return res.status(500).send('Playlist fetch error');
     }
   }
 
-  // Stream full .MP4 video on-the-fly using FFmpeg remuxing
-  console.log(`[Download] Starting MP4 remux stream for: ${safeFilename}`);
+  // 2. Direct MPEG-TS Stream (Plays natively on VLC, Android, iPhone, Windows Media Player)
+  if (format === 'ts' || format === 'direct') {
+    return streamDirectTs(localHlsUrl, safeFilename, res);
+  }
 
-  res.setHeader('Content-Type', 'video/mp4');
-  res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
-  res.setHeader('Cache-Control', 'no-cache');
+  // 3. Default: Try FFmpeg if available, otherwise fallback to direct TS stream
+  try {
+    const ffmpeg = spawn('ffmpeg', [
+      '-i', localHlsUrl,
+      '-c', 'copy',
+      '-bsf:a', 'aac_adtstoasc',
+      '-f', 'mp4',
+      '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+      'pipe:1'
+    ]);
 
-  const ffmpeg = spawn('ffmpeg', [
-    '-i', localHlsUrl,
-    '-c', 'copy',
-    '-bsf:a', 'aac_adtstoasc',
-    '-f', 'mp4',
-    '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
-    'pipe:1'
-  ]);
+    let spawned = false;
 
-  ffmpeg.stdout.pipe(res);
+    ffmpeg.stdout.once('data', () => {
+      spawned = true;
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
+      res.setHeader('Cache-Control', 'no-cache');
+    });
 
-  ffmpeg.stderr.on('data', (d) => {
-    // optional debug logging
-  });
+    ffmpeg.stdout.pipe(res);
 
-  ffmpeg.on('error', (err) => {
-    console.error('[Download] FFmpeg spawn error:', err.message);
-    if (!res.headersSent) res.status(500).send('Download conversion error');
-  });
+    ffmpeg.on('error', (err) => {
+      console.warn('[Download] FFmpeg unavailable on host/serverless, streaming direct TS video:', err.message);
+      if (!res.headersSent) {
+        streamDirectTs(localHlsUrl, safeFilename, res);
+      }
+    });
 
-  req.on('close', () => {
-    console.log(`[Download] Client cancelled download: ${safeFilename}`);
-    ffmpeg.kill('SIGINT');
-  });
+    req.on('close', () => {
+      try { ffmpeg.kill('SIGINT'); } catch (e) {}
+    });
+  } catch (err) {
+    if (!res.headersSent) {
+      streamDirectTs(localHlsUrl, safeFilename, res);
+    }
+  }
 };
+
+// Stream segments directly as a single .ts video file
+async function streamDirectTs(playlistUrl, safeFilename, res) {
+  try {
+    const plRes = await fetch(playlistUrl);
+    if (!plRes.ok) return res.status(502).send('Stream unavailable');
+
+    const m3u8Text = await plRes.text();
+    const lines = m3u8Text.split('\n');
+    const segmentUrls = [];
+
+    const baseUrl = playlistUrl.substring(0, playlistUrl.lastIndexOf('/') + 1);
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const fullUrl = trimmed.startsWith('http') ? trimmed : `${baseUrl}${trimmed}`;
+        segmentUrls.push(fullUrl);
+      }
+    }
+
+    if (segmentUrls.length === 0) {
+      return res.status(404).send('No video segments found');
+    }
+
+    res.setHeader('Content-Type', 'video/mp2t');
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.ts"`);
+    res.setHeader('Cache-Control', 'no-cache');
+
+    for (const segUrl of segmentUrls) {
+      if (res.writableEnded || res.destroyed) break;
+      try {
+        const segRes = await fetch(segUrl);
+        if (segRes.ok) {
+          const buf = await segRes.arrayBuffer();
+          res.write(Buffer.from(buf));
+        }
+      } catch (e) {
+        // continue with next segment
+      }
+    }
+    res.end();
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(500).send('Stream download error');
+    }
+  }
+}

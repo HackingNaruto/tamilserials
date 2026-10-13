@@ -582,37 +582,6 @@ async function scrapeEpisodeVideo(episodeSlug, episodeUrl) {
     servers: []
   };
 
-  // Dedicated Bigg Boss 24/7 Live Stream Handler
-  if ((episodeSlug && episodeSlug.includes('live-24-7')) || (targetUrl && targetUrl.includes('live-24-7'))) {
-    result.title = 'Bigg Boss Tamil Season 10 Live 24/7 (Non-Stop Stream)';
-    result.thumbnail = toProxyImage('https://www.tamildhool.tech/wp-content/uploads/2026/09/bb24.jpg');
-    result.description = 'Watch Bigg Boss Tamil Season 10 Live 24/7 uninterrupted feed directly from the house online.';
-    result.videoId = 'live-stream-tamil';
-
-    result.servers.push({
-      name: 'Server 1 (24/7 Live Stream HD)',
-      type: 'embed',
-      url: 'https://lessonsfromanimals.com/exploring-animal-kingdom-wisdom-what-humans-can-learn-from-animal-parenting-techniques/?video_id=vibrantpulse-live-tamil',
-      badge: 'LIVE 24/7'
-    });
-
-    result.servers.push({
-      name: 'Server 2 (Official Live Mirror)',
-      type: 'embed',
-      url: 'https://media.walletcanvas.com/watch?ch=tamil',
-      badge: 'Live Mirror'
-    });
-
-    result.servers.push({
-      name: 'Server 3 (External Live Host)',
-      type: 'embed',
-      url: 'https://teamstoday.com/?video=vibrantpulse-live-tamil',
-      badge: 'Live Backup'
-    });
-
-    setCache(cacheKey, result);
-    return result;
-  }
 
   try {
     let html = await fetchPageHtml(targetUrl);

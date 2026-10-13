@@ -715,14 +715,15 @@ function renderPlayer(ep) {
 
     switchServer(0);
 
-    // Setup Direct Download button (Full MP4 video)
+    // Setup Download button to open download modal
     const dlBtn = document.getElementById('downloadStreamBtn');
-    if (ep.videoId && dlBtn) {
-      const cleanFileTitle = (ep.title || 'Tamil-Serial').replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
-      dlBtn.href = `/api/download?v=${encodeURIComponent(ep.videoId)}&title=${encodeURIComponent(cleanFileTitle)}`;
-      dlBtn.setAttribute('download', `${cleanFileTitle}.mp4`);
+    if (dlBtn) {
+      dlBtn.onclick = (e) => {
+        e.preventDefault();
+        openDownloadModal();
+      };
       dlBtn.style.display = 'inline-flex';
-      dlBtn.title = 'Click to download complete episode video (.mp4)';
+      dlBtn.title = 'Click to download episode video (.ts/.mp4) or playlist';
     }
   } else {
     const videoFrame = document.getElementById('videoPlayerFrame');
@@ -858,6 +859,7 @@ async function loadSerialShelfAndNav(ep) {
   currentShelfShowSlug = showSlug;
   currentShelfShowPath = showPath;
   currentShelfPage = 2; // Initial batch already includes page 1 & 2
+  window._allSerialEpisodesLoaded = false;
 
   let episodesList = [];
 
@@ -943,13 +945,18 @@ async function loadSerialShelfAndNav(ep) {
 
 // Fetch Next Page of Episodes for Watch Page Shelf
 window.loadMoreShelfEpisodes = async function() {
-  if (isLoadingMoreShelf || !currentShelfShowSlug) return;
+  if (isLoadingMoreShelf || !currentShelfShowSlug || window._allSerialEpisodesLoaded) return;
   const btn = document.getElementById('shelfLoadMoreBtn');
-  if (!btn) return;
+  const drawerIcon = document.getElementById('fsLoadMoreDrawerIcon');
+  const drawerTitle = document.getElementById('fsLoadMoreDrawerTitle');
 
   isLoadingMoreShelf = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading More Episodes...`;
-  btn.disabled = true;
+  if (btn) {
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading More Episodes...`;
+    btn.disabled = true;
+  }
+  if (drawerIcon) drawerIcon.className = 'fa-solid fa-spinner fa-spin';
+  if (drawerTitle) drawerTitle.innerText = 'Loading...';
 
   currentShelfPage += 1;
   let apiUrl = `/episodes?show=${encodeURIComponent(currentShelfShowSlug)}&page=${currentShelfPage}`;
@@ -957,30 +964,114 @@ window.loadMoreShelfEpisodes = async function() {
 
   const res = await apiGet(apiUrl);
   if (res && res.data && res.data.length > 0) {
-    // Append unique episodes
+    let addedCount = 0;
     res.data.forEach(item => {
       const exists = currentSerialEpisodes.find(e => (e.id === item.id) || (e.slug === item.slug));
       if (!exists) {
         currentSerialEpisodes.push(item);
+        addedCount++;
       }
     });
 
+    if (addedCount === 0) {
+      window._allSerialEpisodesLoaded = true;
+    }
+
     renderSerialShelf();
     updateFsEpisodesDrawer();
-    btn.innerHTML = `<i class="fa-solid fa-angles-down"></i> Load More Older Episodes`;
-    btn.disabled = false;
-    showToast(`Loaded ${res.data.length} more episodes`, 'fa-layer-group');
+
+    if (btn) {
+      btn.innerHTML = `<i class="fa-solid fa-angles-down"></i> Load More Older Episodes`;
+      btn.disabled = false;
+    }
+    showToast(`Loaded ${addedCount || res.data.length} more episodes`, 'fa-layer-group');
   } else {
-    btn.innerHTML = `<i class="fa-solid fa-check"></i> All Archived Episodes Loaded`;
-    btn.disabled = true;
+    window._allSerialEpisodesLoaded = true;
+    updateFsEpisodesDrawer();
+    if (btn) {
+      btn.innerHTML = `<i class="fa-solid fa-check"></i> All Archived Episodes Loaded`;
+      btn.disabled = true;
+    }
     showToast('All episodes loaded for this serial', 'fa-check');
   }
   isLoadingMoreShelf = false;
 };
 
+// Drawer In-Player Trigger for Loading Next Batch
+window.loadMoreFsDrawerEpisodes = async function(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  if (isLoadingMoreShelf || window._allSerialEpisodesLoaded) return;
+  await window.loadMoreShelfEpisodes();
+};
+
 // ==================================================================
-// FULLSCREEN IN-PLAYER OTT "MORE EPISODES" DRAWER & SWIPE GESTURE
+// FULLSCREEN IN-PLAYER OTT "MORE EPISODES" DRAWER & ADVANCED GESTURES
 // ==================================================================
+function setupPlayerOverlaysAndGestures(playerHost, video) {
+  if (!playerHost) return;
+
+  // 1. Mount Centered Gesture HUD Pill
+  if (!playerHost.querySelector('#gestureHudPill')) {
+    const hud = document.createElement('div');
+    hud.className = 'gesture-hud-pill';
+    hud.id = 'gestureHudPill';
+    hud.innerHTML = `<i id="gestureHudIcon" class="fa-solid fa-play"></i> <span id="gestureHudText">Play</span>`;
+    playerHost.appendChild(hud);
+  }
+
+  // 2. Mount Double-Tap Wave Ripples (Left & Right)
+  if (!playerHost.querySelector('#gestureRippleLeft')) {
+    const ripLeft = document.createElement('div');
+    ripLeft.className = 'gesture-ripple left';
+    ripLeft.id = 'gestureRippleLeft';
+    ripLeft.innerHTML = `<i class="fa-solid fa-backward-step" style="font-size:1.8rem;"></i><span>10s</span>`;
+    playerHost.appendChild(ripLeft);
+  }
+  if (!playerHost.querySelector('#gestureRippleRight')) {
+    const ripRight = document.createElement('div');
+    ripRight.className = 'gesture-ripple right';
+    ripRight.id = 'gestureRippleRight';
+    ripRight.innerHTML = `<i class="fa-solid fa-forward-step" style="font-size:1.8rem;"></i><span>10s</span>`;
+    playerHost.appendChild(ripRight);
+  }
+
+  // 3. Mount Fullscreen Rotate & Lock Buttons
+  if (!playerHost.querySelector('#fsRotateBtn')) {
+    const rotBtn = document.createElement('button');
+    rotBtn.type = 'button';
+    rotBtn.className = 'fs-rotate-btn';
+    rotBtn.id = 'fsRotateBtn';
+    rotBtn.title = 'Rotate Screen Orientation (Landscape/Portrait)';
+    rotBtn.innerHTML = `<i class="fa-solid fa-rotate"></i>`;
+    rotBtn.style.display = 'none';
+    rotBtn.onclick = (e) => toggleScreenRotation(e);
+    playerHost.appendChild(rotBtn);
+  }
+
+  if (!playerHost.querySelector('#fsLockBtn')) {
+    const lockBtn = document.createElement('button');
+    lockBtn.type = 'button';
+    lockBtn.className = 'fs-lock-btn';
+    lockBtn.id = 'fsLockBtn';
+    lockBtn.title = 'Lock Screen Controls';
+    lockBtn.innerHTML = `<i class="fa-solid fa-lock-open"></i>`;
+    lockBtn.style.display = 'none';
+    lockBtn.onclick = (e) => togglePlayerLock(e);
+    playerHost.appendChild(lockBtn);
+  }
+
+  // 4. Mount In-Player Episodes Drawer
+  initFsEpisodesDrawer(playerHost);
+
+  // 5. Attach Touch Gesture Engine
+  if (video) {
+    attachPlayerGestures(playerHost, video);
+  }
+}
+
 function initFsEpisodesDrawer(playerHost) {
   if (!playerHost) return;
   // If drawer already exists in host, don't re-create
@@ -1053,15 +1144,20 @@ function initFsEpisodesDrawer(playerHost) {
 function updateFsEpisodesDrawer() {
   const carousel = document.getElementById('fsDrawerCarousel');
   const countEl = document.getElementById('fsDrawerCount');
-  if (!carousel || !currentSerialEpisodes || currentSerialEpisodes.length === 0) return;
+  if (!carousel) return;
 
-  if (countEl) {
+  if (countEl && currentSerialEpisodes) {
     countEl.innerText = `${currentSerialEpisodes.length} Episodes`;
+  }
+
+  if (!currentSerialEpisodes || currentSerialEpisodes.length === 0) {
+    carousel.innerHTML = `<div style="padding:20px;color:var(--text-muted);font-size:0.85rem;">Loading serial episodes...</div>`;
+    return;
   }
 
   const currentSlug = currentEpisode ? (currentEpisode.id || currentEpisode.slug) : '';
 
-  carousel.innerHTML = currentSerialEpisodes.map(ep => {
+  let html = currentSerialEpisodes.map(ep => {
     const isCur = currentSlug && ((ep.id === currentSlug) || (ep.slug === currentSlug) ||
       (currentEpisode && currentEpisode.title && ep.title && ep.title.trim().toLowerCase() === currentEpisode.title.trim().toLowerCase()));
 
@@ -1089,7 +1185,47 @@ function updateFsEpisodesDrawer() {
     `;
   }).join('');
 
-  // Only scroll carousel horizontally if the drawer is currently open (NEVER use scrollIntoView as it scrolls parent overflow:hidden containers!)
+  // Persistent 'Load More Older Episodes' Button Card at the End of Carousel
+  if (!window._allSerialEpisodesLoaded) {
+    html += `
+      <div class="fs-ep-card fs-ep-load-more" id="fsLoadMoreDrawerCard" onclick="loadMoreFsDrawerEpisodes(event)">
+        <div class="fs-load-more-icon">
+          <i class="fa-solid ${isLoadingMoreShelf ? 'fa-spinner fa-spin' : 'fa-angles-right'}" id="fsLoadMoreDrawerIcon"></i>
+        </div>
+        <div class="fs-load-more-title" id="fsLoadMoreDrawerTitle">${isLoadingMoreShelf ? 'Loading...' : 'Load More Older'}</div>
+        <div class="fs-load-more-sub">Swipe or Tap</div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="fs-ep-card fs-ep-load-more" style="opacity:0.65;cursor:default;">
+        <div class="fs-load-more-icon" style="background:#00d26a;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="fs-load-more-title">All Episodes Loaded</div>
+        <div class="fs-load-more-sub">Complete Series</div>
+      </div>
+    `;
+  }
+
+  carousel.innerHTML = html;
+
+  // Horizontal scroll listener on carousel: reaching right edge auto-loads older episodes!
+  if (!carousel._hasInfiniteScrollBound) {
+    carousel._hasInfiniteScrollBound = true;
+    let scrollDebounce = false;
+    carousel.addEventListener('scroll', () => {
+      if (scrollDebounce || isLoadingMoreShelf || window._allSerialEpisodesLoaded) return;
+      if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 160) {
+        scrollDebounce = true;
+        window.loadMoreFsDrawerEpisodes().finally(() => {
+          setTimeout(() => { scrollDebounce = false; }, 800);
+        });
+      }
+    }, { passive: true });
+  }
+
+  // Only scroll carousel horizontally if drawer is currently open
   const drawer = document.getElementById('fsEpisodeDrawer');
   if (drawer && drawer.classList.contains('is-open')) {
     centerActiveDrawerCard();
@@ -1125,7 +1261,7 @@ window.openFsEpisodesDrawer = function(e) {
   drawer.classList.add('is-open');
   if (backdrop) backdrop.classList.add('is-visible');
 
-  // Scroll carousel horizontally to active playing episode without affecting vertical scroll
+  // Scroll carousel horizontally to active playing episode
   setTimeout(centerActiveDrawerCard, 50);
 };
 
@@ -1138,7 +1274,7 @@ window.closeFsEpisodesDrawer = function(e) {
   if (backdrop) backdrop.classList.remove('is-visible');
 };
 
-// Touch swipe gesture listeners
+// Touch swipe gestures for drawer sheet
 function attachDrawerSwipeGestures(host, drawer) {
   let touchStartY = 0;
   let touchStartX = 0;
@@ -1186,6 +1322,448 @@ function attachDrawerSwipeGestures(host, drawer) {
       }
     }
   }, { passive: true });
+}
+
+// ==================================================================
+// ADVANCED PLAYER GESTURES, HUD, ROTATE & CONTROLS LOCK
+// ==================================================================
+let gestureAttachedToVideo = null;
+let isPlayerControlsLocked = false;
+let unlockTimeout = null;
+let hudTimeout = null;
+
+function showPlayerHud(text, iconClass = 'fa-play') {
+  const hud = document.getElementById('gestureHudPill');
+  const icon = document.getElementById('gestureHudIcon');
+  const label = document.getElementById('gestureHudText');
+  if (!hud) return;
+
+  if (icon) icon.className = `fa-solid ${iconClass}`;
+  if (label) label.innerText = text;
+
+  hud.classList.add('show');
+  clearTimeout(hudTimeout);
+  hudTimeout = setTimeout(() => {
+    hud.classList.remove('show');
+  }, 900);
+}
+
+function triggerGestureRipple(side) {
+  const rip = document.getElementById(side === 'left' ? 'gestureRippleLeft' : 'gestureRippleRight');
+  if (!rip) return;
+  rip.classList.remove('active');
+  void rip.offsetWidth; // Force CSS animation restart
+  rip.classList.add('active');
+  setTimeout(() => {
+    rip.classList.remove('active');
+  }, 500);
+}
+
+function toggleScreenRotation(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  if (screen.orientation && screen.orientation.lock) {
+    const type = (screen.orientation.type || '').toLowerCase();
+    if (type.startsWith('portrait')) {
+      screen.orientation.lock('landscape').then(() => {
+        showPlayerHud('Landscape Mode', 'fa-mobile-screen');
+      }).catch(() => {});
+    } else {
+      screen.orientation.lock('portrait').then(() => {
+        showPlayerHud('Portrait Mode', 'fa-mobile-screen');
+      }).catch(() => {});
+    }
+  } else {
+    showPlayerHud('Screen Rotation Toggled', 'fa-rotate');
+  }
+}
+
+function togglePlayerLock(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  isPlayerControlsLocked = !isPlayerControlsLocked;
+  const lockBtn = document.getElementById('fsLockBtn');
+  const playerHost = document.getElementById('videoPlayerFrame');
+  const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
+
+  if (isPlayerControlsLocked) {
+    if (lockBtn) {
+      lockBtn.classList.add('locked');
+      lockBtn.innerHTML = '<i class="fa-solid fa-lock"></i>';
+      lockBtn.title = 'Screen is Locked. Tap to Unlock';
+      lockBtn.style.opacity = '1';
+    }
+    if (plyrContainer) plyrContainer.classList.add('plyr--hide-controls');
+    showPlayerHud('Controls Locked', 'fa-lock');
+
+    clearTimeout(unlockTimeout);
+    unlockTimeout = setTimeout(() => {
+      if (lockBtn && isPlayerControlsLocked) lockBtn.style.opacity = '0.3';
+    }, 2500);
+  } else {
+    if (lockBtn) {
+      lockBtn.classList.remove('locked');
+      lockBtn.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+      lockBtn.title = 'Lock Screen Controls';
+      lockBtn.style.opacity = '1';
+    }
+    if (plyrContainer) plyrContainer.classList.remove('plyr--hide-controls');
+    showPlayerHud('Controls Unlocked', 'fa-lock-open');
+  }
+}
+
+function handleFullscreenChange() {
+  const isFs = !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement ||
+    (plyrInstance && plyrInstance.fullscreen && plyrInstance.fullscreen.active)
+  );
+
+  const rotateBtn = document.getElementById('fsRotateBtn');
+  const lockBtn = document.getElementById('fsLockBtn');
+
+  if (isFs) {
+    if (rotateBtn) rotateBtn.style.display = 'flex';
+    if (lockBtn) lockBtn.style.display = 'flex';
+
+    // Auto-lock to landscape on mobile / touch screen
+    if (window.innerWidth <= 1024 || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      } catch (err) {}
+    }
+  } else {
+    if (rotateBtn) rotateBtn.style.display = 'none';
+    if (lockBtn) lockBtn.style.display = 'none';
+
+    // Auto-revert to portrait & unlock
+    try {
+      if (screen.orientation) {
+        if (screen.orientation.lock) {
+          screen.orientation.lock('portrait').then(() => {
+            if (screen.orientation.unlock) screen.orientation.unlock();
+          }).catch(() => {
+            if (screen.orientation.unlock) screen.orientation.unlock();
+          });
+        } else if (screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }
+    } catch (err) {}
+
+    // Unlock controls if previously locked
+    if (isPlayerControlsLocked) {
+      togglePlayerLock();
+    }
+  }
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+function attachPlayerGestures(host, video) {
+  if (gestureAttachedToVideo === video) return;
+  gestureAttachedToVideo = video;
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let startVideoTime = 0;
+  let startBrightness = 1.0;
+  let currentBrightness = 1.0;
+  let startVolume = 1.0;
+  let isSwiping = false;
+  let swipeType = '';
+  let rightSwipeTriggered = false;
+
+  let startPinchDist = 0;
+  let initialScale = 1.0;
+  let currentScale = 1.0;
+
+  let tapCount = 0;
+  let tapTimeout = null;
+  let lastTouchEndTime = 0;
+
+  function isExcluded(target) {
+    return !!(
+      target.closest('.plyr__controls') ||
+      target.closest('.fs-episodes-drawer') ||
+      target.closest('.fs-episodes-pill') ||
+      target.closest('#fsDrawerBackdrop') ||
+      target.closest('#downloadModal') ||
+      target.closest('.next-ep-overlay') ||
+      target.id === 'fsRotateBtn' ||
+      target.closest('#fsRotateBtn') ||
+      target.id === 'fsLockBtn' ||
+      target.closest('#fsLockBtn')
+    );
+  }
+
+  // Touch Start
+  host.addEventListener('touchstart', (e) => {
+    if (isExcluded(e.target)) return;
+
+    if (isPlayerControlsLocked) {
+      if (e.target.id !== 'fsLockBtn' && !e.target.closest('#fsLockBtn')) {
+        showPlayerHud('Screen Locked - Tap lock icon to unlock', 'fa-lock');
+        const lockBtn = document.getElementById('fsLockBtn');
+        if (lockBtn) {
+          lockBtn.style.opacity = '1';
+          clearTimeout(unlockTimeout);
+          unlockTimeout = setTimeout(() => {
+            if (isPlayerControlsLocked) lockBtn.style.opacity = '0.3';
+          }, 2000);
+        }
+      }
+      return;
+    }
+
+    // 2-Finger Pinch to Zoom
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      startPinchDist = Math.hypot(dx, dy);
+      initialScale = currentScale;
+      return;
+    }
+
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      startVideoTime = video.currentTime;
+      startVolume = typeof video.volume === 'number' ? video.volume : 1.0;
+      isSwiping = false;
+      swipeType = '';
+      rightSwipeTriggered = false;
+    }
+  }, { passive: true });
+
+  // Touch Move
+  host.addEventListener('touchmove', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked) return;
+
+    // Pinch Zoom Handling
+    if (e.touches.length === 2 && startPinchDist > 0) {
+      if (e.cancelable) e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      currentScale = Math.max(0.7, Math.min(3.5, initialScale * (dist / startPinchDist)));
+      video.style.transform = `scale(${currentScale})`;
+      video.style.objectFit = 'contain';
+      showPlayerHud(`Zoom ${currentScale.toFixed(2)}x`, 'fa-magnifying-glass');
+      return;
+    }
+
+    if (e.touches.length !== 1) return;
+
+    const curX = e.touches[0].clientX;
+    const curY = e.touches[0].clientY;
+    const deltaX = curX - touchStartX;
+    const deltaY = touchStartY - curY; // swipe up is positive
+
+    const rect = host.getBoundingClientRect();
+
+    if (!swipeType) {
+      if (Math.abs(deltaX) > 18 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        swipeType = 'h';
+      } else if (Math.abs(deltaY) > 18) {
+        swipeType = 'v';
+      }
+    }
+
+    if (swipeType === 'h') {
+      isSwiping = true;
+      if (e.cancelable) e.preventDefault();
+      const duration = video.duration || 1200;
+      const seekAmount = (deltaX / rect.width) * 120; // 120s full span
+      const targetTime = Math.max(0, Math.min(duration, startVideoTime + seekAmount));
+      video.currentTime = targetTime;
+      showPlayerHud(`${formatTime(targetTime)} / ${formatTime(duration)}`, 'fa-clock');
+    } else if (swipeType === 'v') {
+      isSwiping = true;
+      if (e.cancelable) e.preventDefault();
+
+      if (touchStartX < rect.left + (rect.width / 2)) {
+        // Left half: Brightness control
+        const brightDelta = deltaY / 250;
+        currentBrightness = Math.max(0.2, Math.min(2.0, startBrightness + brightDelta));
+        video.style.filter = `brightness(${currentBrightness})`;
+        const pct = Math.round((currentBrightness / 2.0) * 100);
+        showPlayerHud(`Brightness ${pct}%`, 'fa-sun');
+      } else {
+        // Right half: Vertical Swipe Up -> Episodes Drawer, Swipe Down -> Close Drawer, or Volume
+        if (deltaY > 55 && !rightSwipeTriggered) {
+          rightSwipeTriggered = true;
+          openFsEpisodesDrawer();
+          showPlayerHud('More Episodes', 'fa-list-ul');
+        } else if (deltaY < -55 && !rightSwipeTriggered) {
+          rightSwipeTriggered = true;
+          closeFsEpisodesDrawer();
+        } else if (!rightSwipeTriggered) {
+          const volDelta = deltaY / 300;
+          const newVol = Math.max(0, Math.min(1, startVolume + volDelta));
+          video.volume = newVol;
+          const volPct = Math.round(newVol * 100);
+          showPlayerHud(`Volume ${volPct}%`, newVol > 0 ? 'fa-volume-high' : 'fa-volume-xmark');
+        }
+      }
+    }
+  }, { passive: false });
+
+  // Touch End
+  host.addEventListener('touchend', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked) return;
+    lastTouchEndTime = Date.now();
+
+    if (isSwiping) {
+      isSwiping = false;
+      startBrightness = currentBrightness;
+      return;
+    }
+
+    if (e.changedTouches && e.changedTouches.length === 1) {
+      const endX = e.changedTouches[0].clientX;
+      const rect = host.getBoundingClientRect();
+      const relX = endX - rect.left;
+
+      tapCount++;
+      if (tapCount === 1) {
+        tapTimeout = setTimeout(() => {
+          tapCount = 0;
+        }, 280);
+      } else if (tapCount === 2) {
+        clearTimeout(tapTimeout);
+        tapCount = 0;
+
+        if (relX < rect.width / 2) {
+          // Double Tap Left: -10s Rewind
+          video.currentTime = Math.max(0, video.currentTime - 10);
+          triggerGestureRipple('left');
+          showPlayerHud('-10s Rewind', 'fa-backward-step');
+        } else {
+          // Double Tap Right: +10s Forward
+          video.currentTime = Math.min(video.duration || 9999, video.currentTime + 10);
+          triggerGestureRipple('right');
+          showPlayerHud('+10s Forward', 'fa-forward-step');
+        }
+      }
+    }
+  }, { passive: true });
+
+  // Double Click (Desktop PC)
+  host.addEventListener('dblclick', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked) return;
+    if (Date.now() - lastTouchEndTime < 500) return;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    } else {
+      if (host.requestFullscreen) host.requestFullscreen();
+      else if (host.webkitRequestFullscreen) host.webkitRequestFullscreen();
+      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+    }
+  });
+}
+
+// ==================================================================
+// DOWNLOAD OPTIONS MODAL & CLIPBOARD ENGINE
+// ==================================================================
+window.openDownloadModal = function() {
+  const modal = document.getElementById('downloadModal');
+  if (!modal || !currentEpisode) return;
+
+  let videoId = currentEpisode.videoId || '';
+  if (!videoId && currentEpisode.servers) {
+    for (const s of currentEpisode.servers) {
+      if (s.url && s.url.includes('v=')) {
+        const match = s.url.match(/v=([^&]+)/);
+        if (match) { videoId = match[1]; break; }
+      }
+    }
+  }
+
+  const title = currentEpisode.title || 'Episode';
+  const titleEl = document.getElementById('dlEpisodeTitle');
+  if (titleEl) titleEl.innerText = title;
+
+  const directBtn = document.getElementById('dlDirectVideoBtn');
+  const m3u8Btn = document.getElementById('dlM3u8Btn');
+
+  const safeTitle = encodeURIComponent(title);
+  if (videoId) {
+    if (directBtn) {
+      directBtn.href = `/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=ts`;
+      directBtn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.ts`);
+      directBtn.style.display = 'flex';
+    }
+    if (m3u8Btn) {
+      m3u8Btn.href = `/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=m3u8`;
+      m3u8Btn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.m3u8`);
+      m3u8Btn.style.display = 'flex';
+    }
+  } else if (currentEpisode.servers && currentEpisode.servers[0] && currentEpisode.servers[0].type === 'direct') {
+    const directUrl = currentEpisode.servers[0].url;
+    if (directBtn) {
+      directBtn.href = directUrl;
+      directBtn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.mp4`);
+      directBtn.style.display = 'flex';
+    }
+    if (m3u8Btn) m3u8Btn.style.display = 'none';
+  }
+
+  modal.classList.add('show');
+};
+
+window.closeDownloadModal = function(e) {
+  if (e && e.target !== e.currentTarget && !e.target.closest('.fs-drawer-close-btn')) return;
+  const modal = document.getElementById('downloadModal');
+  if (modal) modal.classList.remove('show');
+};
+
+window.copyStreamDownloadLink = function() {
+  let videoId = currentEpisode ? currentEpisode.videoId : '';
+  if (!videoId && currentEpisode && currentEpisode.servers) {
+    for (const s of currentEpisode.servers) {
+      if (s.url && s.url.includes('v=')) {
+        const match = s.url.match(/v=([^&]+)/);
+        if (match) { videoId = match[1]; break; }
+      }
+    }
+  }
+
+  const streamUrl = videoId
+    ? `${window.location.origin}/api/hls?v=${encodeURIComponent(videoId)}`
+    : (currentEpisode && currentEpisode.servers && currentEpisode.servers[0] ? currentEpisode.servers[0].url : window.location.href);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(streamUrl).then(() => {
+      showToast('Stream URL copied to clipboard!', 'fa-copy');
+    }).catch(() => {
+      fallbackCopyText(streamUrl);
+    });
+  } else {
+    fallbackCopyText(streamUrl);
+  }
+};
+
+function fallbackCopyText(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('Stream URL copied to clipboard!', 'fa-copy');
+  } catch (err) {
+    showToast('Failed to copy URL', 'fa-triangle-exclamation');
+  }
+  document.body.removeChild(ta);
 }
 
 function renderNextPrevNavigation(navContainer) {
@@ -1361,9 +1939,12 @@ function switchServer(idx, btnEl) {
         // Initialize Plyr instance with controller settings
         plyrInstance = new Plyr(video, plyrOptions);
 
-        // Mount Fullscreen Episodes Drawer inside the Player Container (visible in fullscreen)
+        // Mount Fullscreen Episodes Drawer & Overlays inside the Player Container
         const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
-        initFsEpisodesDrawer(plyrContainer);
+        setupPlayerOverlaysAndGestures(plyrContainer, video);
+
+        plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
+        plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
 
         // Resume Playback if saved
         if (savedTime > 15) {
@@ -1408,7 +1989,10 @@ function switchServer(idx, btnEl) {
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = server.url;
       plyrInstance = new Plyr(video, plyrOptions);
-      initFsEpisodesDrawer(plyrInstance.elements ? plyrInstance.elements.container : container);
+      const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
+      setupPlayerOverlaysAndGestures(plyrContainer, video);
+      plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
+      plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
       if (savedTime > 15) video.currentTime = savedTime;
       video.addEventListener('ended', onEpisodeEnded);
     }
@@ -1420,7 +2004,10 @@ function switchServer(idx, btnEl) {
       settings: ['speed'],
       seekTime: 10
     });
-    initFsEpisodesDrawer(plyrInstance.elements ? plyrInstance.elements.container : container);
+    const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
+    setupPlayerOverlaysAndGestures(plyrContainer, video);
+    plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
+    plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
     if (savedTime > 15) video.currentTime = savedTime;
     video.addEventListener('ended', onEpisodeEnded);
   } else {
@@ -1428,7 +2015,7 @@ function switchServer(idx, btnEl) {
     container.innerHTML = `<iframe src="${server.url}" class="video-iframe" frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen referrerpolicy="no-referrer"></iframe>`;
-    initFsEpisodesDrawer(container);
+    setupPlayerOverlaysAndGestures(container, null);
   }
 }
 

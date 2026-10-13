@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>Watch Episode - StreamX</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=2.7.0">
+  <link rel="stylesheet" href="styles.css?v=2.8.0">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.min.js"></script>
@@ -28,7 +28,6 @@
         <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
         <li id="navHistoryItem" style="display:none;"><a href="index.html#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
         <li><a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="nav-link" style="color: #ffb703; font-weight:700;"><i class="fa-solid fa-eye" style="color:#e50914;"></i> Bigg Boss</a></li>
-        <li><a href="watch.html?v=bigg-boss-tamil-season-10-live-24-7&t=dmlqYXktdHYvdmlqYXktdHYtc2hvdy9iaWdnLWJvc3MtdGFtaWwtc2Vhc29uLTEwL2JpZ2ctYm9zcy10YW1pbC1zZWFzb24tMTAtbGl2ZS0yNC03" class="nav-link" style="color: #e50914; font-weight:700;"><i class="fa-solid fa-tower-broadcast fa-fade"></i> 24/7 LIVE</a></li>
       </ul>
 
       <!-- Theme Toggle & Search Bar -->
@@ -82,9 +81,9 @@
             <button class="player-tool-btn" id="theaterModeBtn" onclick="toggleTheaterMode()">
               <i class="fa-solid fa-film"></i> Theater Mode
             </button>
-            <a id="downloadStreamBtn" href="#" class="player-tool-btn" download style="display:none;">
+            <button id="downloadStreamBtn" class="player-tool-btn" onclick="openDownloadModal()" style="display:none;">
               <i class="fa-solid fa-cloud-arrow-down"></i> Download Episode (HD)
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -141,6 +140,56 @@
     </div>
   </main>
 
+  <!-- Download Options Modal -->
+  <div id="downloadModal" class="download-modal" onclick="closeDownloadModal(event)">
+    <div class="download-modal-content" onclick="event.stopPropagation()">
+      <div class="download-modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 50%; background: rgba(229,9,20,0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1.15rem;"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 2px;">Download Episode (HD)</h3>
+            <p style="font-size: 0.76rem; color: var(--text-muted);" id="dlEpisodeTitle">Select download method</p>
+          </div>
+        </div>
+        <button type="button" class="fs-drawer-close-btn" onclick="closeDownloadModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="download-options-list">
+        <!-- Option 1: Direct Video Stream (TS/MP4) -->
+        <a id="dlDirectVideoBtn" href="#" class="download-opt-card" download>
+          <div class="download-opt-icon"><i class="fa-solid fa-file-video"></i></div>
+          <div class="download-opt-info">
+            <h4>Direct Video File (.TS / .MP4)</h4>
+            <p>Single video file for offline playback in any media player</p>
+          </div>
+          <span class="card-tag" style="position: static; background: var(--primary);"><i class="fa-solid fa-download"></i> Save</span>
+        </a>
+
+        <!-- Option 2: Downloader Playlist for 1DM / ADM / VLC -->
+        <a id="dlM3u8Btn" href="#" class="download-opt-card" download>
+          <div class="download-opt-icon" style="background: rgba(0,210,106,0.15); color: #00d26a;"><i class="fa-solid fa-bolt"></i></div>
+          <div class="download-opt-info">
+            <h4>1DM / ADM / VLC Downloader (.m3u8)</h4>
+            <p>High-speed multi-threaded downloader playlist file</p>
+          </div>
+          <span class="card-tag" style="position: static; background: #00d26a; color: #000;">Fast 1DM</span>
+        </a>
+
+        <!-- Option 3: Copy Stream URL -->
+        <button type="button" class="download-opt-card" onclick="copyStreamDownloadLink()">
+          <div class="download-opt-icon" style="background: rgba(255,183,3,0.15); color: #ffb703;"><i class="fa-solid fa-copy"></i></div>
+          <div class="download-opt-info">
+            <h4>Copy Direct Stream URL</h4>
+            <p>Paste into VLC, MX Player, or your mobile downloader app</p>
+          </div>
+          <span class="card-tag" style="position: static; background: #202431; color: var(--text-muted);"><i class="fa-solid fa-clipboard"></i> Copy</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-inner">
@@ -156,6 +205,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.7.0"></script>
+  <script src="app.js?v=2.8.0"></script>
 </body>
 </html>
