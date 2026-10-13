@@ -16,7 +16,7 @@
   <!-- Top Navbar -->
   <header class="header">
     <div class="nav-container">
-      <a href="index.html" class="brand">
+      <a href="/" class="brand">
         <div class="brand-icon">SX</div>
         <div class="brand-text">
           <div class="brand-title">STREAM<span>X</span></div>
@@ -25,20 +25,20 @@
       </a>
 
       <ul class="nav-menu">
-        <li><a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li id="navHistoryItem" style="display:none;"><a href="index.html#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
+        <li><a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li id="navHistoryItem" style="display:none;"><a href="/#history-section" class="nav-link" style="color:#00d26a; font-weight:700;"><i class="fa-solid fa-clock-rotate-left"></i> Continue Watching</a></li>
         <li><a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="nav-link" style="color: #ffb703; font-weight:700;"><i class="fa-solid fa-eye" style="color:#e50914;"></i> Bigg Boss</a></li>
       </ul>
 
       <!-- Theme Toggle & Search Bar -->
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <button id="themeToggleBtn" onclick="toggleTheme()" class="player-tool-btn" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer;">
-          <i class="fa-solid fa-sun"></i> Light Mode
+      <div class="nav-tools-right">
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="player-tool-btn" title="Toggle Light/Dark Theme">
+          <i class="fa-solid fa-sun"></i> <span class="theme-btn-text">Light Mode</span>
         </button>
 
         <div class="search-wrapper">
           <i class="fa-solid fa-magnifying-glass search-icon"></i>
-          <input type="text" id="searchInput" class="search-input" placeholder="Search serial, channel...">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search serial, ch...">
           <div id="searchResultsModal" class="search-results-modal"></div>
         </div>
       </div>
@@ -51,7 +51,7 @@
 
       <!-- Breadcrumbs -->
       <div class="breadcrumbs" id="playerBreadcrumbs">
-        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/"><i class="fa-solid fa-house"></i> Home</a>
         <span>/</span>
         <span>Loading...</span>
       </div>

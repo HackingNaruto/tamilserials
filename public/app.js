@@ -1,4 +1,15 @@
 // StreamX Tamil - Frontend Application Engine
+
+// Clean root domain URL: Remove index.html from address bar
+(function cleanRootUrl() {
+  if (typeof window !== 'undefined' && window.location) {
+    if (window.location.pathname.endsWith('/index.html') || window.location.pathname === '/index.html') {
+      const cleanPath = window.location.pathname.replace(/\/index\.html$/, '') || '/';
+      window.history.replaceState(null, '', cleanPath + window.location.search + window.location.hash);
+    }
+  }
+})();
+
 const API_BASE = '/api';
 
 // ---- Helpers ----
@@ -617,7 +628,7 @@ async function initWatchPage() {
   let epUrl = params.get('url');
 
   if (!slug && !epUrl && !token) {
-    window.location.href = 'index.html';
+    window.location.href = '/';
     return;
   }
 
@@ -695,7 +706,7 @@ function renderPlayer(ep) {
   const bc = document.getElementById('playerBreadcrumbs');
   if (bc) {
     bc.innerHTML = `
-      <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="/"><i class="fa-solid fa-house"></i> Home</a>
       <span>/</span>
       <span style="color:var(--text-main);">${ep.title || 'Episode'}</span>`;
   }
@@ -1217,7 +1228,11 @@ function updateFsEpisodesDrawer() {
     `;
   }
 
+  const prevScrollLeft = carousel.scrollLeft;
   carousel.innerHTML = html;
+  if (prevScrollLeft > 0) {
+    carousel.scrollLeft = prevScrollLeft;
+  }
 
   // Horizontal scroll listener on carousel: reaching right edge auto-loads older episodes!
   if (!carousel._hasInfiniteScrollBound) {
@@ -1232,12 +1247,6 @@ function updateFsEpisodesDrawer() {
         });
       }
     }, { passive: true });
-  }
-
-  // Only scroll carousel horizontally if drawer is currently open
-  const drawer = document.getElementById('fsEpisodeDrawer');
-  if (drawer && drawer.classList.contains('is-open')) {
-    centerActiveDrawerCard();
   }
 }
 
@@ -1496,6 +1505,11 @@ function attachPlayerGestures(host, video) {
   let tapTimeout = null;
   let lastTouchEndTime = 0;
 
+  // 2X Fast-Forward Hold State
+  let holdTimer = null;
+  let isHolding2x = false;
+  let previousPlaybackRate = 1.0;
+
   function isExcluded(target) {
     return !!(
       target.closest('.plyr__controls') ||
@@ -1509,6 +1523,43 @@ function attachPlayerGestures(host, video) {
       target.id === 'fsLockBtn' ||
       target.closest('#fsLockBtn')
     );
+  }
+
+  function togglePlayerControls() {
+    const playerHost = document.getElementById('videoPlayerFrame');
+    const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
+    if (!plyrContainer) return;
+
+    if (plyrInstance && typeof plyrInstance.toggleControls === 'function') {
+      plyrInstance.toggleControls();
+    } else {
+      plyrContainer.classList.toggle('plyr--hide-controls');
+    }
+
+    const isHidden = plyrContainer.classList.contains('plyr--hide-controls');
+    const rotateBtn = document.getElementById('fsRotateBtn');
+    const lockBtn = document.getElementById('fsLockBtn');
+    if (rotateBtn) rotateBtn.style.opacity = isHidden ? '0' : '1';
+    if (lockBtn && !isPlayerControlsLocked) lockBtn.style.opacity = isHidden ? '0' : '1';
+  }
+
+  function toggleVideoPlayPause() {
+    if (!video) return;
+    if (video.paused) {
+      if (plyrInstance && typeof plyrInstance.play === 'function') {
+        plyrInstance.play().catch(() => video.play());
+      } else {
+        video.play();
+      }
+      showPlayerHud('Play ▶', 'fa-play');
+    } else {
+      if (plyrInstance && typeof plyrInstance.pause === 'function') {
+        plyrInstance.pause();
+      } else {
+        video.pause();
+      }
+      showPlayerHud('Pause ⏸', 'fa-pause');
+    }
   }
 
   // Touch Start
@@ -1532,6 +1583,7 @@ function attachPlayerGestures(host, video) {
 
     // 2-Finger Pinch to Zoom
     if (e.touches.length === 2) {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       startPinchDist = Math.hypot(dx, dy);
@@ -1547,6 +1599,20 @@ function attachPlayerGestures(host, video) {
       isSwiping = false;
       swipeType = '';
       rightSwipeTriggered = false;
+
+      // Start 2X Fast-Forward Hold Timer (400ms hold)
+      if (holdTimer) clearTimeout(holdTimer);
+      holdTimer = setTimeout(() => {
+        if (!isSwiping && !isPlayerControlsLocked) {
+          isHolding2x = true;
+          previousPlaybackRate = video.playbackRate || 1.0;
+          video.playbackRate = 2.0;
+          showPlayerHud('2X Fast Forward ⏩', 'fa-forward');
+          if (navigator.vibrate) {
+            try { navigator.vibrate(40); } catch(err) {}
+          }
+        }
+      }, 400);
     }
   }, { passive: true });
 
@@ -1573,6 +1639,14 @@ function attachPlayerGestures(host, video) {
     const curY = e.touches[0].clientY;
     const deltaX = curX - touchStartX;
     const deltaY = touchStartY - curY; // swipe up is positive
+
+    // If moved more than 14px, cancel 2X hold timer
+    if (Math.hypot(deltaX, deltaY) > 14) {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+    }
 
     const rect = host.getBoundingClientRect();
 
@@ -1628,6 +1702,19 @@ function attachPlayerGestures(host, video) {
     if (isExcluded(e.target) || isPlayerControlsLocked) return;
     lastTouchEndTime = Date.now();
 
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      holdTimer = null;
+    }
+
+    // Revert 2X Fast-Forward on release
+    if (isHolding2x) {
+      isHolding2x = false;
+      video.playbackRate = previousPlaybackRate || 1.0;
+      showPlayerHud(`${video.playbackRate}X Speed (Normal)`, 'fa-play');
+      return; // Skip tap actions on hold release
+    }
+
     if (isSwiping) {
       isSwiping = false;
       startBrightness = currentBrightness;
@@ -1635,45 +1722,83 @@ function attachPlayerGestures(host, video) {
     }
 
     if (e.changedTouches && e.changedTouches.length === 1) {
-      const endX = e.changedTouches[0].clientX;
-      const rect = host.getBoundingClientRect();
-      const relX = endX - rect.left;
-
       tapCount++;
       if (tapCount === 1) {
         tapTimeout = setTimeout(() => {
           tapCount = 0;
-        }, 280);
+          // Single Tap: Toggle Controller overlay
+          togglePlayerControls();
+        }, 260);
       } else if (tapCount === 2) {
         clearTimeout(tapTimeout);
         tapCount = 0;
-
-        if (relX < rect.width / 2) {
-          // Double Tap Left: -10s Rewind
-          video.currentTime = Math.max(0, video.currentTime - 10);
-          triggerGestureRipple('left');
-          showPlayerHud('-10s Rewind', 'fa-backward-step');
-        } else {
-          // Double Tap Right: +10s Forward
-          video.currentTime = Math.min(video.duration || 9999, video.currentTime + 10);
-          triggerGestureRipple('right');
-          showPlayerHud('+10s Forward', 'fa-forward-step');
-        }
+        // Double Tap: Toggle Play / Pause
+        toggleVideoPlayPause();
       }
     }
   }, { passive: true });
 
-  // Double Click (Desktop PC)
-  host.addEventListener('dblclick', (e) => {
-    if (isExcluded(e.target) || isPlayerControlsLocked) return;
-    if (Date.now() - lastTouchEndTime < 500) return;
-    if (document.fullscreenElement || document.webkitFullscreenElement) {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    } else {
-      if (host.requestFullscreen) host.requestFullscreen();
-      else if (host.webkitRequestFullscreen) host.webkitRequestFullscreen();
-      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+  // Touch Cancel
+  host.addEventListener('touchcancel', () => {
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      holdTimer = null;
+    }
+    if (isHolding2x) {
+      isHolding2x = false;
+      video.playbackRate = previousPlaybackRate || 1.0;
+      showPlayerHud(`${video.playbackRate}X Speed (Normal)`, 'fa-play');
+    }
+    isSwiping = false;
+    tapCount = 0;
+  });
+
+  // Desktop Mouse Support (Hold for 2X, Single Click for Controls, Double Click for Pause/Play)
+  let mouseHoldTimer = null;
+  let isMouseHolding2x = false;
+  let clickCount = 0;
+  let clickTimeout = null;
+
+  host.addEventListener('mousedown', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked || e.button !== 0) return;
+    if (Date.now() - lastTouchEndTime < 600) return;
+
+    if (mouseHoldTimer) clearTimeout(mouseHoldTimer);
+    mouseHoldTimer = setTimeout(() => {
+      isMouseHolding2x = true;
+      previousPlaybackRate = video.playbackRate || 1.0;
+      video.playbackRate = 2.0;
+      showPlayerHud('2X Fast Forward ⏩', 'fa-forward');
+    }, 400);
+  });
+
+  host.addEventListener('mouseup', (e) => {
+    if (mouseHoldTimer) {
+      clearTimeout(mouseHoldTimer);
+      mouseHoldTimer = null;
+    }
+    if (isMouseHolding2x) {
+      isMouseHolding2x = false;
+      video.playbackRate = previousPlaybackRate || 1.0;
+      showPlayerHud(`${video.playbackRate}X Speed (Normal)`, 'fa-play');
+    }
+  });
+
+  host.addEventListener('click', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked || e.button !== 0) return;
+    if (Date.now() - lastTouchEndTime < 600) return;
+    if (isMouseHolding2x) return;
+
+    clickCount++;
+    if (clickCount === 1) {
+      clickTimeout = setTimeout(() => {
+        clickCount = 0;
+        togglePlayerControls();
+      }, 260);
+    } else if (clickCount === 2) {
+      clearTimeout(clickTimeout);
+      clickCount = 0;
+      toggleVideoPlayPause();
     }
   });
 }
@@ -1898,6 +2023,7 @@ function switchServer(idx, btnEl) {
       },
       speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
       seekTime: 10,
+      clickToPlay: false,
       keyboard: { focused: true, global: true },
       tooltips: { controls: true, seek: true },
       i18n: {
@@ -2011,6 +2137,7 @@ function switchServer(idx, btnEl) {
     plyrInstance = new Plyr(video, {
       controls: ['play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
       settings: ['speed'],
+      clickToPlay: false,
       seekTime: 10
     });
     const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
@@ -2157,7 +2284,7 @@ async function initShowPage() {
   const token = params.get('t');
 
   if (!showSlug && !token) {
-    window.location.href = 'index.html';
+    window.location.href = '/';
     return;
   }
 

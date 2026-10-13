@@ -30,10 +30,18 @@
   --input-bg: #eaeff8;
 }
 
-* {
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  position: relative;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -44,7 +52,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
 }
 
 /* Light Off Mode for Cinema experience */
@@ -917,71 +924,144 @@ body.cinema-lights-off .episode-info-card:hover {
 
 /* Mobile Responsive Overhaul */
 @media (max-width: 768px) {
-  body {
-    overflow-x: hidden;
+  html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden !important;
   }
   .header {
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.65rem;
+    width: 100%;
+    max-width: 100vw;
   }
   .nav-container {
-    gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    gap: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .nav-menu {
     display: none;
   }
+  .brand {
+    gap: 6px;
+    flex-shrink: 0;
+  }
   .brand-title {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
   }
   .brand-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 1.05rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+    border-radius: 8px;
   }
   .brand-tag {
     display: none;
   }
+  .nav-tools-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 1;
+  }
+  .theme-btn-text {
+    display: none !important;
+  }
+  #themeToggleBtn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 32px !important;
+    font-size: 0.8rem !important;
+  }
   .search-wrapper {
-    width: 140px;
+    width: 110px !important;
+    max-width: 130px !important;
+    flex-shrink: 1;
   }
   .search-input {
-    padding: 0.45rem 0.75rem 0.45rem 2rem;
-    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem 0.4rem 1.8rem;
+    font-size: 0.78rem;
+  }
+  .search-icon {
+    left: 0.6rem;
+    font-size: 0.75rem;
   }
   .hero-spotlight {
-    min-height: 200px;
-    padding: 1.2rem;
+    min-height: 180px;
+    padding: 1.1rem 0.9rem;
     margin-bottom: 1.25rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .hero-title {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+  .hero-desc {
+    font-size: 0.8rem;
+    line-height: 1.35;
+    margin-bottom: 0.85rem;
   }
   .main-content {
-    padding: 0.85rem 0.75rem;
+    padding: 0.75rem 0.5rem;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   /* 2-Column OTT Mobile Cards Grid (Netflix / Hotstar style) */
   .cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    margin-bottom: 1.75rem;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 1.5rem !important;
+    padding: 0 !important;
   }
   .episode-card {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     border-radius: var(--radius-sm);
+    overflow: hidden;
   }
   .card-content {
-    padding: 7px 9px;
+    padding: 6px 8px;
+    min-width: 0;
   }
   .card-title {
-    font-size: 0.82rem;
-    line-height: 1.3;
-    margin-bottom: 0.25rem;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    margin-bottom: 0.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
   }
   .card-meta {
-    font-size: 0.68rem;
+    font-size: 0.66rem;
+    gap: 4px;
+    flex-wrap: wrap;
   }
   .card-duration, .card-tag, .card-channel-badge {
-    font-size: 0.62rem;
-    padding: 2px 6px;
+    font-size: 0.6rem;
+    padding: 2px 5px;
   }
 
   /* Watch Page Mobile Player Edge-to-Edge */
@@ -990,8 +1070,9 @@ body.cinema-lights-off .episode-info-card:hover {
   }
   .player-card {
     border-radius: 0;
-    margin-left: -0.75rem;
-    margin-right: -0.75rem;
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    width: calc(100% + 1rem);
     border-left: none;
     border-right: none;
     margin-bottom: 1rem;
