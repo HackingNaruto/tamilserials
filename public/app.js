@@ -1058,6 +1058,14 @@ function setupPlayerOverlaysAndGestures(playerHost, video) {
     playerHost.appendChild(ripRight);
   }
 
+  // Professional Studio OTT Vector Icons
+  window.OTT_ICONS = {
+    rotate: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>`,
+    lockOpen: `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><rect x="3" y="11" width="18" height="11" rx="2.5" ry="2.5"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`,
+    lockClosed: `<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><rect x="3" y="11" width="18" height="11" rx="2.5" ry="2.5" fill="currentColor" fill-opacity="0.25"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+    close: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`
+  };
+
   // 3. Mount Fullscreen Rotate & Lock Buttons
   if (!playerHost.querySelector('#fsRotateBtn')) {
     const rotBtn = document.createElement('button');
@@ -1065,7 +1073,7 @@ function setupPlayerOverlaysAndGestures(playerHost, video) {
     rotBtn.className = 'fs-rotate-btn';
     rotBtn.id = 'fsRotateBtn';
     rotBtn.title = 'Rotate Screen Orientation (Landscape/Portrait)';
-    rotBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i>`;
+    rotBtn.innerHTML = window.OTT_ICONS.rotate;
     rotBtn.style.display = 'none';
     rotBtn.onclick = (e) => toggleScreenRotation(e);
     playerHost.appendChild(rotBtn);
@@ -1077,7 +1085,7 @@ function setupPlayerOverlaysAndGestures(playerHost, video) {
     lockBtn.className = 'fs-lock-btn';
     lockBtn.id = 'fsLockBtn';
     lockBtn.title = 'Lock Screen Controls';
-    lockBtn.innerHTML = `<i class="fa-solid fa-lock-open"></i>`;
+    lockBtn.innerHTML = window.OTT_ICONS.lockOpen;
     lockBtn.style.display = 'none';
     lockBtn.onclick = (e) => togglePlayerLock(e);
     playerHost.appendChild(lockBtn);
@@ -1134,7 +1142,7 @@ function initFsEpisodesDrawer(playerHost) {
         <span id="fsDrawerCount" style="font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:12px;background:rgba(255,255,255,0.1);color:var(--text-muted);"></span>
       </div>
       <button type="button" class="fs-drawer-close-btn" id="fsDrawerCloseBtn" onclick="closeFsEpisodesDrawer(event)" title="Close Episodes Drawer (Esc)">
-        <i class="fa-solid fa-xmark"></i>
+        ${window.OTT_ICONS ? window.OTT_ICONS.close : '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'}
       </button>
     </div>
     <div class="fs-drawer-carousel" id="fsDrawerCarousel"></div>
@@ -1383,7 +1391,7 @@ function togglePlayerLock(e) {
   if (isPlayerControlsLocked) {
     if (lockBtn) {
       lockBtn.classList.add('locked');
-      lockBtn.innerHTML = '<i class="fa-solid fa-lock"></i>';
+      lockBtn.innerHTML = window.OTT_ICONS ? window.OTT_ICONS.lockClosed : '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><rect x="3" y="11" width="18" height="11" rx="2.5" ry="2.5" fill="currentColor" fill-opacity="0.25"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
       lockBtn.title = 'Screen is Locked. Tap to Unlock';
       lockBtn.style.opacity = '1';
     }
@@ -1392,12 +1400,12 @@ function togglePlayerLock(e) {
 
     clearTimeout(unlockTimeout);
     unlockTimeout = setTimeout(() => {
-      if (lockBtn && isPlayerControlsLocked) lockBtn.style.opacity = '0.3';
+      if (lockBtn && isPlayerControlsLocked) lockBtn.style.opacity = '0.35';
     }, 2500);
   } else {
     if (lockBtn) {
       lockBtn.classList.remove('locked');
-      lockBtn.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+      lockBtn.innerHTML = window.OTT_ICONS ? window.OTT_ICONS.lockOpen : '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tool-svg"><rect x="3" y="11" width="18" height="11" rx="2.5" ry="2.5"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
       lockBtn.title = 'Lock Screen Controls';
       lockBtn.style.opacity = '1';
     }
