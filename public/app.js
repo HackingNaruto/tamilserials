@@ -192,11 +192,45 @@ window.undoClearWatchHistory = function() {
 
 function updateNavHistoryIndicator() {
   const navItem = document.getElementById('navHistoryItem');
+  const history = getWatchHistory();
   if (navItem) {
-    const history = getWatchHistory();
     navItem.style.display = history.length > 0 ? 'inline-block' : 'none';
   }
+  const mobileQuickHistory = document.getElementById('mobileQuickHistory');
+  if (mobileQuickHistory) {
+    mobileQuickHistory.style.display = history.length > 0 ? 'inline-flex' : 'none';
+  }
 }
+
+window.handleQuickNavClick = function(type, el) {
+  document.querySelectorAll('.quick-nav-pill').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  if (type === 'episodes') {
+    if (typeof switchHomeView === 'function') switchHomeView('episodes');
+    const target = document.getElementById('today-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (type === 'serials') {
+    if (typeof switchHomeView === 'function') switchHomeView('serials');
+    const target = document.getElementById('today-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (type === 'popular') {
+    const target = document.getElementById('popular-shows');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else if (type === 'history') {
+    const target = document.getElementById('history-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+};
+
 
 function renderContinueWatchingSection() {
   const section = document.getElementById('history-section');
@@ -272,6 +306,12 @@ async function loadHomePage() {
   const res = await apiGet('/episodes?page=1');
   if (res && res.data && res.data.length > 0) {
     allHomepageEpisodes = res.data;
+    res.data.forEach(ep => {
+      const s = ep.id || ep.slug;
+      if (s && ep.thumbnail && ep.thumbnail !== '/api/image') {
+        cacheEpisodeThumbnail(s, ep.thumbnail);
+      }
+    });
     renderHomeContent(container);
 
     // Show 'Show More' button if there are episodes
@@ -507,9 +547,101 @@ function filterByChannel(channel, btnEl) {
   }
 }
 
+// Dedicated Episode Thumbnail Cache (Local Storage & Memory)
+function cacheEpisodeThumbnail(slug, url) {
+  if (!slug || !url || url === '/api/image' || url.includes('placeholder')) return;
+  try {
+    let map = JSON.parse(localStorage.getItem('streamx_thumbnails_cache') || '{}');
+    map[slug] = url;
+    const keys = Object.keys(map);
+    if (keys.length > 300) {
+      delete map[keys[0]];
+    }
+    localStorage.setItem('streamx_thumbnails_cache', JSON.stringify(map));
+  } catch(e) {}
+}
+
+function getCachedEpisodeThumbnail(slug) {
+  if (!slug) return null;
+  try {
+    const map = JSON.parse(localStorage.getItem('streamx_thumbnails_cache') || '{}');
+    return map[slug] || null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// Universal Resolver for High-Def Video Thumbnails across Cards, Shelf & In-Player Drawer
+function getCardThumbnail(ep, isCur = false) {
+  const epSlug = ep.id || ep.slug;
+
+  // 1. If currently playing episode on watch page, use currentEpisode.thumbnail
+  if (isCur && currentEpisode && currentEpisode.thumbnail && currentEpisode.thumbnail !== '/api/image') {
+    return currentEpisode.thumbnail;
+  }
+
+  // 2. Check dedicated thumbnail cache
+  const cached = getCachedEpisodeThumbnail(epSlug);
+  if (cached) return cached;
+
+  // 3. Check Watch History
+  const history = getWatchHistory();
+  const histItem = history.find(h => (h.id === epSlug || h.slug === epSlug));
+  if (histItem && histItem.thumbnail && histItem.thumbnail !== '/api/image') {
+    return histItem.thumbnail;
+  }
+
+  // 4. If ep has thumbnail directly
+  if (ep.thumbnail && ep.thumbnail !== '/api/image' && !ep.thumbnail.includes('placeholder')) {
+    return ep.thumbnail;
+  }
+
+  // 5. If currentEpisode has thumbnail, use as show poster fallback
+  if (currentEpisode && currentEpisode.thumbnail && currentEpisode.thumbnail !== '/api/image') {
+    return currentEpisode.thumbnail;
+  }
+
+  return '/api/image';
+}
+
+// Background thumbnail enrichment for shelf & drawer episodes
+function enrichShelfThumbnails(episodes) {
+  if (!episodes || episodes.length === 0) return;
+  // Pick the first 5 episodes that don't have a cached video thumbnail
+  const candidates = episodes.slice(0, 5).filter(item => {
+    const s = item.id || item.slug;
+    return s && !getCachedEpisodeThumbnail(s);
+  });
+
+  if (candidates.length === 0) return;
+
+  setTimeout(() => {
+    candidates.forEach((cand, index) => {
+      setTimeout(async () => {
+        const cSlug = cand.id || cand.slug;
+        let apiUrl = `/episode?slug=${encodeURIComponent(cSlug)}`;
+        if (cand.url) apiUrl += `&url=${encodeURIComponent(cand.url)}`;
+        try {
+          const r = await apiGet(apiUrl);
+          if (r && r.data && r.data.thumbnail && r.data.thumbnail !== '/api/image') {
+            cacheEpisodeThumbnail(cSlug, r.data.thumbnail);
+            cand.thumbnail = r.data.thumbnail;
+            const imgs = document.querySelectorAll(`a[href*="${encodeURIComponent(cSlug)}"] img.card-thumb`);
+            imgs.forEach(img => {
+              if (img && (!img.src || img.src.includes('/api/image') || img.src.includes('placeholder'))) {
+                img.src = r.data.thumbnail;
+              }
+            });
+          }
+        } catch(e) {}
+      }, index * 800);
+    });
+  }, 1200);
+}
+
 // Generate single card HTML with OTT features
 function buildEpisodeCardHtml(ep, isCur = false) {
-  const thumb = ep.thumbnail || '/api/image';
+  const thumb = getCardThumbnail(ep, isCur);
   const epSlug = ep.id || ep.slug;
   // Clean, short & shareable URL: watch.html?v=SLUG
   const watchLink = `watch.html?v=${encodeURIComponent(epSlug)}`;
@@ -695,6 +827,10 @@ async function initWatchPage() {
   }
 
   currentEpisode = res.data;
+  const curSlug = currentEpisode.id || currentEpisode.slug;
+  if (curSlug && currentEpisode.thumbnail && currentEpisode.thumbnail !== '/api/image') {
+    cacheEpisodeThumbnail(curSlug, currentEpisode.thumbnail);
+  }
   renderPlayer(currentEpisode);
 }
 
@@ -961,6 +1097,9 @@ async function loadSerialShelfAndNav(ep) {
 
   // Populate In-Player / Fullscreen Episodes Drawer
   updateFsEpisodesDrawer();
+
+  // Background thumbnail enrichment for shelf & drawer episodes
+  enrichShelfThumbnails(currentSerialEpisodes);
 }
 
 // Fetch Next Page of Episodes for Watch Page Shelf
@@ -1189,7 +1328,7 @@ function updateFsEpisodesDrawer() {
     const isCur = currentSlug && ((ep.id === currentSlug) || (ep.slug === currentSlug) ||
       (currentEpisode && currentEpisode.title && ep.title && ep.title.trim().toLowerCase() === currentEpisode.title.trim().toLowerCase()));
 
-    const thumb = ep.thumbnail || '/api/image';
+    const thumb = getCardThumbnail(ep, isCur);
     const epSlug = ep.id || ep.slug;
     const watchLink = `watch.html?v=${encodeURIComponent(epSlug)}`;
     const durationLabel = (ep.duration && ep.duration !== '22 Mins') ? ep.duration : 'Full Ep';

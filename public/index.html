@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title data-app-name>StreamX Tamil - HD Serials & Shows Streaming</title>
   <meta name="description" content="Watch Vijay TV, Sun TV, Zee Tamil and Colors Tamil serials, daily episodes, and reality shows online.">
-  <link rel="stylesheet" href="styles.css?v=2.8.5">
+  <link rel="stylesheet" href="styles.css?v=2.8.6">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -45,6 +45,25 @@
       </div>
     </div>
   </header>
+
+  <!-- Mobile Quick Categories Navigation Bar -->
+  <nav class="mobile-quick-nav" id="mobileQuickNav" aria-label="Quick Categories">
+    <button type="button" class="quick-nav-pill active" onclick="handleQuickNavClick('episodes', this)">
+      <i class="fa-solid fa-calendar-day"></i> Today's Episodes
+    </button>
+    <button type="button" class="quick-nav-pill" onclick="handleQuickNavClick('popular', this)">
+      <i class="fa-solid fa-fire"></i> Popular Shows
+    </button>
+    <a href="show.html?show=bigg-boss-tamil-season-10&path=vijay-tv/vijay-tv-show/bigg-boss-tamil-season-10" class="quick-nav-pill" style="border-color: rgba(229,9,20,0.4); color: #ffb703;">
+      <i class="fa-solid fa-eye" style="color: #e50914;"></i> Bigg Boss
+    </a>
+    <button type="button" class="quick-nav-pill" onclick="handleQuickNavClick('serials', this)">
+      <i class="fa-solid fa-folder-open"></i> All Serials
+    </button>
+    <button type="button" id="mobileQuickHistory" class="quick-nav-pill" style="display: none; border-color: rgba(0,210,106,0.3); color: #00d26a;" onclick="handleQuickNavClick('history', this)">
+      <i class="fa-solid fa-clock-rotate-left"></i> Continue Watching
+    </button>
+  </nav>
 
   <!-- Main Body -->
   <main class="main-content">
@@ -136,7 +155,7 @@
             <p class="section-subtitle" id="homeSectionSub">Direct stream latest episodes or switch to full serial archives</p>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div class="section-actions" style="display: flex; gap: 8px; align-items: center;">
           <button id="viewEpisodesBtn" class="player-tool-btn active" onclick="switchHomeView('episodes')" style="border-radius: 20px; padding: 6px 14px; font-size: 0.82rem;">
             <i class="fa-solid fa-circle-play"></i> Latest Episodes
           </button>
@@ -198,6 +217,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=2.8.5"></script>
+  <script src="app.js?v=2.8.6"></script>
 </body>
 </html>

@@ -231,6 +231,12 @@ body.cinema-lights-off .episode-info-card:hover {
   color: #0f172a;
 }
 
+/* Mobile Quick Navigation Bar (Desktop Hidden) */
+.mobile-quick-nav {
+  display: none;
+}
+
+
 /* Search Bar */
 .search-wrapper {
   position: relative;
@@ -427,8 +433,13 @@ body.cinema-lights-off .episode-info-card:hover {
   align-items: center;
   gap: 10px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding-bottom: 0.75rem;
+  padding-right: 1.5rem !important;
+  scroll-padding-right: 1.5rem !important;
+  box-sizing: border-box;
   margin-bottom: 1.75rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .channel-pill {
@@ -444,6 +455,7 @@ body.cinema-lights-off .episode-info-card:hover {
   font-weight: 600;
   font-size: 0.88rem;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: var(--transition);
   cursor: pointer;
 }
@@ -1070,23 +1082,93 @@ body.cinema-lights-off .episode-info-card:hover {
     left: 0.65rem;
     font-size: 0.78rem;
   }
+  /* Mobile Sticky Quick Categories Navigation Bar */
+  .mobile-quick-nav {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 12px;
+    padding-right: 1.5rem !important;
+    scroll-padding-right: 1.5rem !important;
+    background: rgba(14, 18, 28, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 52px;
+    z-index: 90;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .mobile-quick-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .quick-nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .quick-nav-pill:hover,
+  .quick-nav-pill.active {
+    background: rgba(229, 9, 20, 0.15);
+    border-color: var(--primary);
+    color: #fff;
+  }
+
   .hero-spotlight {
-    min-height: 180px;
-    padding: 1.1rem 0.9rem;
+    min-height: 200px;
+    padding: 1.25rem 1rem;
     margin-bottom: 1.25rem;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    border-radius: var(--radius-md);
   }
   .hero-title {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
+    font-weight: 800;
     line-height: 1.2;
+    margin-bottom: 0.35rem;
     word-break: break-word;
   }
   .hero-desc {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     line-height: 1.35;
     margin-bottom: 0.85rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hero-body > div:last-child {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .hero-body .btn {
+    padding: 0.65rem 0.8rem !important;
+    font-size: 0.78rem !important;
+    width: 100% !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
   }
   .main-content {
     padding: 0.85rem 0.75rem;
@@ -1096,15 +1178,40 @@ body.cinema-lights-off .episode-info-card:hover {
     overflow-x: hidden;
   }
 
+  /* Section Header on Mobile: Clean vertical stack with balanced 50%-50% action toggle buttons */
+  .section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 1rem !important;
+  }
+  .section-header .section-title-wrap {
+    width: 100%;
+  }
+  .section-header .section-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .section-header .section-actions .player-tool-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 0.8rem !important;
+    padding: 8px 10px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+
   /* 2-Column OTT Mobile Cards Grid (Netflix / Hotstar style) */
   .cards-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
+    gap: 12px 10px !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    margin-bottom: 1.75rem !important;
+    margin-bottom: 2rem !important;
     padding: 0 !important;
   }
   .episode-card {
@@ -1112,36 +1219,45 @@ body.cinema-lights-off .episode-info-card:hover {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    border-radius: var(--radius-sm);
+    border-radius: 10px !important;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  .card-thumb-wrapper {
+    aspect-ratio: 16 / 9;
+    border-radius: 9px 9px 0 0;
   }
   .card-content {
-    padding: 7px 9px;
+    padding: 8px;
     min-width: 0;
   }
   .card-title {
-    font-size: 0.82rem;
-    line-height: 1.3;
-    margin-bottom: 0.25rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    word-break: break-word;
-    height: 2.6em;
+    font-size: 0.8rem !important;
+    line-height: 1.3 !important;
+    font-weight: 700 !important;
+    margin-bottom: 4px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    word-break: break-word !important;
+    height: 2.6em !important;
   }
   .card-meta {
-    font-size: 0.68rem;
-    gap: 4px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 0.68rem !important;
+    gap: 4px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    color: var(--text-muted);
   }
   .card-duration, .card-tag, .card-channel-badge {
-    font-size: 0.62rem;
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-size: 0.62rem !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
   }
 
   /* Watch Page Mobile Player Edge-to-Edge */
@@ -1162,14 +1278,21 @@ body.cinema-lights-off .episode-info-card:hover {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
   }
   .server-list {
     width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     flex-wrap: nowrap;
-    padding-bottom: 3px;
+    padding-bottom: 4px;
+    padding-right: 1.5rem !important;
+    scroll-padding-right: 1.5rem !important;
     -webkit-overflow-scrolling: touch;
     gap: 6px;
+    box-sizing: border-box;
   }
   .server-list::-webkit-scrollbar {
     display: none;
@@ -1182,14 +1305,19 @@ body.cinema-lights-off .episode-info-card:hover {
     font-size: 0.78rem;
     padding: 6px 12px;
     border-radius: 20px;
+    white-space: nowrap;
   }
   .player-actions {
     width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     flex-wrap: nowrap;
-    padding-bottom: 2px;
+    padding-bottom: 4px;
+    padding-right: 1.5rem !important;
+    scroll-padding-right: 1.5rem !important;
     -webkit-overflow-scrolling: touch;
     gap: 6px;
+    box-sizing: border-box;
   }
   .player-actions::-webkit-scrollbar {
     display: none;
@@ -1199,6 +1327,7 @@ body.cinema-lights-off .episode-info-card:hover {
     font-size: 0.76rem;
     padding: 6px 12px;
     border-radius: 20px;
+    white-space: nowrap;
   }
   .episode-info-card {
     padding: 0.95rem 1rem;
@@ -1211,14 +1340,63 @@ body.cinema-lights-off .episode-info-card:hover {
     font-weight: 800;
     margin-bottom: 0.35rem;
   }
+  .episode-nav-bar {
+    padding: 10px 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .episode-nav-bar > div:first-child {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .ep-nav-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 8px 10px !important;
+    font-size: 0.78rem !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+  .autoplay-toggle {
+    justify-content: center !important;
+    font-size: 0.78rem !important;
+  }
+  #shelfMoreWrap {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+    padding: 0 10px !important;
+  }
+  #shelfMoreWrap .player-tool-btn {
+    width: 100% !important;
+    margin-left: 0 !important;
+    justify-content: center !important;
+    padding: 10px 16px !important;
+    box-sizing: border-box !important;
+  }
   .channel-pills-bar {
     gap: 8px;
     padding-bottom: 0.5rem;
+    padding-right: 1.5rem !important;
+    scroll-padding-right: 1.5rem !important;
     margin-bottom: 1.25rem;
+    box-sizing: border-box;
   }
   .channel-pill {
     font-size: 0.78rem;
     padding: 6px 12px;
+    flex-shrink: 0;
+  }
+  #showPoster {
+    width: 100% !important;
+    max-width: 240px !important;
+    margin: 0 auto !important;
+    display: block !important;
   }
 
   /* OTT Mobile Portrait Video Controls (Progress Bar & Duration Overhaul) */
@@ -2123,6 +2301,26 @@ body.cinema-lights-off .episode-info-card:hover {
   border-color: #00d26a;
   color: #000;
 }
+
+/* Light Theme Overrides for Mobile Quick Categories Navigation */
+[data-theme="light"] .mobile-quick-nav {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .quick-nav-pill {
+  background: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .quick-nav-pill:hover,
+[data-theme="light"] .quick-nav-pill.active {
+  background: rgba(229, 9, 20, 0.1) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
 
 /* =========================================
    GESTURE HUD, ROTATE & LOCK OVERLAYS
