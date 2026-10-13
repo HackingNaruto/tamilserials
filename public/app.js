@@ -1510,23 +1510,64 @@ function attachPlayerGestures(host, video) {
     );
   }
 
-  function togglePlayerControls() {
+  let playerControlsTimer = null;
+
+  function isPlayerControlsVisible() {
+    const playerHost = document.getElementById('videoPlayerFrame');
+    const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
+    if (!plyrContainer) return false;
+    return !plyrContainer.classList.contains('plyr--hide-controls');
+  }
+
+  function showPlayerControls(autoHideMs = 4000) {
     const playerHost = document.getElementById('videoPlayerFrame');
     const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
     if (!plyrContainer) return;
 
-    if (plyrInstance && typeof plyrInstance.toggleControls === 'function') {
-      plyrInstance.toggleControls();
-    } else {
-      plyrContainer.classList.toggle('plyr--hide-controls');
-    }
-
-    const isHidden = plyrContainer.classList.contains('plyr--hide-controls');
+    plyrContainer.classList.remove('plyr--hide-controls');
     const rotateBtn = document.getElementById('fsRotateBtn');
     const lockBtn = document.getElementById('fsLockBtn');
-    if (rotateBtn) rotateBtn.style.opacity = isHidden ? '0' : '1';
-    if (lockBtn && !isPlayerControlsLocked) lockBtn.style.opacity = isHidden ? '0' : '1';
+    if (rotateBtn) rotateBtn.style.opacity = '1';
+    if (lockBtn && !isPlayerControlsLocked) lockBtn.style.opacity = '1';
+
+    if (playerControlsTimer) {
+      clearTimeout(playerControlsTimer);
+      playerControlsTimer = null;
+    }
+
+    if (autoHideMs > 0) {
+      playerControlsTimer = setTimeout(() => {
+        if (video && video.paused) return; // Keep controls visible while paused
+        hidePlayerControls();
+      }, autoHideMs);
+    }
   }
+
+  function hidePlayerControls() {
+    const playerHost = document.getElementById('videoPlayerFrame');
+    const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
+    if (!plyrContainer) return;
+
+    if (video && video.paused) return; // Never hide controls while paused
+
+    plyrContainer.classList.add('plyr--hide-controls');
+    const rotateBtn = document.getElementById('fsRotateBtn');
+    const lockBtn = document.getElementById('fsLockBtn');
+    if (rotateBtn) rotateBtn.style.opacity = '0';
+    if (lockBtn && !isPlayerControlsLocked) lockBtn.style.opacity = '0';
+  }
+
+  function togglePlayerControls() {
+    if (isPlayerControlsVisible()) {
+      hidePlayerControls();
+    } else {
+      showPlayerControls(4000);
+    }
+  }
+
+  // Keep controls alive when playing or pausing
+  video.addEventListener('play', () => showPlayerControls(4000));
+  video.addEventListener('pause', () => showPlayerControls(0));
 
   function toggleVideoPlayPause() {
     if (!video) return;
@@ -1537,6 +1578,7 @@ function attachPlayerGestures(host, video) {
         video.play();
       }
       showPlayerHud('Play ▶', 'fa-play');
+      showPlayerControls(4000);
     } else {
       if (plyrInstance && typeof plyrInstance.pause === 'function') {
         plyrInstance.pause();
@@ -1544,6 +1586,7 @@ function attachPlayerGestures(host, video) {
         video.pause();
       }
       showPlayerHud('Pause ⏸', 'fa-pause');
+      showPlayerControls(0);
     }
   }
 
@@ -1723,10 +1766,11 @@ function attachPlayerGestures(host, video) {
           tapCount = 0;
           // Single Tap: Toggle Controller overlay
           togglePlayerControls();
-        }, 260);
+        }, 280);
       } else if (tapCount === 2) {
         clearTimeout(tapTimeout);
         tapCount = 0;
+        if (e.cancelable) e.preventDefault();
 
         // Double Tap Smart Zones:
         // Left 33%: Rewind -10s
@@ -1745,7 +1789,7 @@ function attachPlayerGestures(host, video) {
         }
       }
     }
-  }, { passive: true });
+  }, { passive: false });
 
   // Touch Cancel
   host.addEventListener('touchcancel', () => {
@@ -1760,6 +1804,19 @@ function attachPlayerGestures(host, video) {
     }
     isSwiping = false;
     tapCount = 0;
+  });
+
+  // Keep controls alive on mouse interaction
+  host.addEventListener('mousemove', (e) => {
+    if (!isExcluded(e.target) && !isPlayerControlsLocked) {
+      showPlayerControls(4000);
+    }
+  });
+
+  // Suppress browser double click zoom
+  host.addEventListener('dblclick', (e) => {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
   });
 
   // Desktop Mouse Wheel Support (Scroll Left = Brightness, Scroll Right = Volume)
@@ -1875,29 +1932,97 @@ window.openDownloadModal = function() {
   const titleEl = document.getElementById('dlEpisodeTitle');
   if (titleEl) titleEl.innerText = title;
 
-  const directBtn = document.getElementById('dlDirectVideoBtn');
-  const m3u8Btn = document.getElementById('dlM3u8Btn');
-
+  const optionsContainer = modal.querySelector('.download-options-list');
   const safeTitle = encodeURIComponent(title);
-  if (videoId) {
-    if (directBtn) {
-      directBtn.href = `/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=ts`;
-      directBtn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.ts`);
-      directBtn.style.display = 'flex';
+  const cleanTitle = title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'streamx_episode';
+
+  if (optionsContainer && videoId) {
+    let html = '';
+    const qualities = window._currentStreamQualities || [];
+
+    if (qualities.length > 1) {
+      const qMeta = {
+        1080: { label: '1080p Full HD', note: 'Ultra-crisp master stream', color: '#e50914' },
+        720: { label: '720p HD Video', note: 'Recommended high definition', color: '#00d26a' },
+        480: { label: '480p SD Video', note: 'Standard resolution & fast download', color: '#ffb703' },
+        360: { label: '360p Mobile Saver', note: 'Low file size for mobile data', color: '#38bdf8' }
+      };
+
+      qualities.forEach(q => {
+        const meta = qMeta[q] || { label: `${q}p Video`, note: 'Playable video file', color: '#00d26a' };
+        const dlUrl = `/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=ts&quality=${q}`;
+        html += `
+          <a href="${dlUrl}" class="download-opt-card" download="${cleanTitle}_${q}p.ts">
+            <div class="download-opt-icon" style="background:${meta.color}22; color:${meta.color};">
+              <i class="fa-solid fa-file-video"></i>
+            </div>
+            <div class="download-opt-info">
+              <h4>${meta.label}</h4>
+              <p>${meta.note}</p>
+            </div>
+            <span class="card-tag" style="position:static; background:${meta.color}; color:#000; font-weight:800;">
+              <i class="fa-solid fa-download"></i> ${q}p
+            </span>
+          </a>
+        `;
+      });
+    } else {
+      const singleQ = (qualities.length === 1 && qualities[0]) ? `${qualities[0]}p HD` : '720p HD';
+      html += `
+        <a href="/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=ts" class="download-opt-card" download="${cleanTitle}.ts">
+          <div class="download-opt-icon">
+            <i class="fa-solid fa-file-video"></i>
+          </div>
+          <div class="download-opt-info">
+            <h4>Direct Video File (${singleQ})</h4>
+            <p>Single video file for offline playback in any media player</p>
+          </div>
+          <span class="card-tag" style="position:static; background:var(--primary);"><i class="fa-solid fa-download"></i> Save</span>
+        </a>
+      `;
     }
-    if (m3u8Btn) {
-      m3u8Btn.href = `/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=m3u8`;
-      m3u8Btn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.m3u8`);
-      m3u8Btn.style.display = 'flex';
-    }
-  } else if (currentEpisode.servers && currentEpisode.servers[0] && currentEpisode.servers[0].type === 'direct') {
+
+    // M3U8 Downloader Option
+    html += `
+      <a href="/api/download?v=${encodeURIComponent(videoId)}&title=${safeTitle}&format=m3u8" class="download-opt-card" download="${cleanTitle}.m3u8">
+        <div class="download-opt-icon" style="background:rgba(0,210,106,0.15); color:#00d26a;">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="download-opt-info">
+          <h4>1DM / ADM / VLC Downloader (.m3u8)</h4>
+          <p>High-speed multi-threaded downloader playlist file</p>
+        </div>
+        <span class="card-tag" style="position:static; background:#00d26a; color:#000;">Fast 1DM</span>
+      </a>
+    `;
+
+    // Copy Direct Stream URL
+    html += `
+      <button type="button" class="download-opt-card" onclick="copyStreamDownloadLink()">
+        <div class="download-opt-icon" style="background:rgba(255,183,3,0.15); color:#ffb703;">
+          <i class="fa-solid fa-copy"></i>
+        </div>
+        <div class="download-opt-info">
+          <h4>Copy Direct Stream URL</h4>
+          <p>Paste into VLC, MX Player, or your mobile downloader app</p>
+        </div>
+        <span class="card-tag" style="position:static; background:#202431; color:var(--text-muted);"><i class="fa-solid fa-clipboard"></i> Copy</span>
+      </button>
+    `;
+
+    optionsContainer.innerHTML = html;
+  } else if (optionsContainer && currentEpisode.servers && currentEpisode.servers[0] && currentEpisode.servers[0].type === 'direct') {
     const directUrl = currentEpisode.servers[0].url;
-    if (directBtn) {
-      directBtn.href = directUrl;
-      directBtn.setAttribute('download', `${title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim()}.mp4`);
-      directBtn.style.display = 'flex';
-    }
-    if (m3u8Btn) m3u8Btn.style.display = 'none';
+    optionsContainer.innerHTML = `
+      <a href="${directUrl}" class="download-opt-card" download="${cleanTitle}.mp4">
+        <div class="download-opt-icon"><i class="fa-solid fa-file-video"></i></div>
+        <div class="download-opt-info">
+          <h4>Direct MP4 Video File</h4>
+          <p>Download video file directly for offline viewing</p>
+        </div>
+        <span class="card-tag" style="position:static; background:var(--primary);"><i class="fa-solid fa-download"></i> MP4</span>
+      </a>
+    `;
   }
 
   modal.classList.add('show');
@@ -2041,40 +2166,11 @@ function switchServer(idx, btnEl) {
         'airplay',
         'fullscreen'
       ],
-      settings: ['quality', 'speed'],
-      quality: {
-        default: 0,
-        options: [0, 1080, 720, 480, 360],
-        forced: true,
-        onChange: (newQuality) => {
-          if (!window._currentHls) return;
-          if (newQuality === 0) {
-            window._currentHls.currentLevel = -1;
-            showToast('Quality: Auto (Adaptive HD)', 'fa-sliders');
-          } else {
-            const targetH = parseInt(newQuality, 10);
-            if (window._currentHls.levels && window._currentHls.levels.length > 0) {
-              let bestIdx = 0;
-              let minDiff = 99999;
-              window._currentHls.levels.forEach((lvl, i) => {
-                const diff = Math.abs((lvl.height || 0) - targetH);
-                if (diff < minDiff) {
-                  minDiff = diff;
-                  bestIdx = i;
-                }
-              });
-              window._currentHls.currentLevel = bestIdx;
-              const actualH = window._currentHls.levels[bestIdx].height || targetH;
-              showToast(`Quality: ${actualH}p HD`, 'fa-sliders');
-            } else {
-              showToast(`Quality: ${newQuality}p`, 'fa-sliders');
-            }
-          }
-        }
-      },
+      hideControls: false, // We control auto-hide smoothly without Plyr abrupt conflicts
+      clickToPlay: false,
+      settings: ['speed'],
       speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
       seekTime: 10,
-      clickToPlay: false,
       keyboard: { focused: true, global: true },
       tooltips: { controls: true, seek: true },
       i18n: {
@@ -2097,10 +2193,13 @@ function switchServer(idx, btnEl) {
 
       hls.on(Hls.Events.MANIFEST_PARSED, function() {
         // Read detected stream quality levels from HLS
-        const availableQualities = hls.levels ? hls.levels.map(l => l.height).filter(Boolean) : [];
+        const availableQualities = hls.levels ? hls.levels.map(l => l.height).filter(h => typeof h === 'number' && h > 0) : [];
         const uniqueQualities = Array.from(new Set(availableQualities)).sort((a,b) => b - a);
+        window._currentStreamQualities = uniqueQualities.length > 0 ? uniqueQualities : [720];
 
-        if (uniqueQualities.length > 0) {
+        // Only attach Quality switcher if source ACTUALLY provides multiple qualities!
+        if (uniqueQualities.length > 1) {
+          plyrOptions.settings = ['quality', 'speed'];
           plyrOptions.quality = {
             default: 0,
             options: [0, ...uniqueQualities],
@@ -2120,6 +2219,9 @@ function switchServer(idx, btnEl) {
               }
             }
           };
+        } else {
+          plyrOptions.settings = ['speed'];
+          delete plyrOptions.quality;
         }
 
         // Initialize Plyr instance with controller settings

@@ -1,6 +1,6 @@
 // Direct Episode Video Download Endpoint
 // Supports Vercel Serverless (no FFmpeg required) + Local FFmpeg remuxing
-// Supports direct MP4/TS stream and 1DM/VLC/ADM playlist downloads
+// Supports multi-quality direct MP4/TS stream and 1DM/VLC/ADM playlist downloads
 
 const { spawn } = require('child_process');
 
@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { v: videoId, title, slug, format } = req.query;
+  const { v: videoId, title, slug, format, quality } = req.query;
 
   if (!videoId) {
     return res.status(400).send('Missing video ID parameter v');
@@ -20,91 +20,168 @@ module.exports = async (req, res) => {
   const localHlsUrl = `${protocol}://${host}/api/hls?v=${encodeURIComponent(videoId)}`;
 
   const rawTitle = title || slug || `Episode-${videoId}`;
-  const safeFilename = rawTitle.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'streamx_episode';
+  const qualityTag = quality ? `_${quality}p` : '';
+  const safeFilename = (rawTitle.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'streamx_episode') + qualityTag;
 
-  // 1. M3U8 Playlist download (for 1DM, ADM, VLC, MX Player on Android / iOS)
-  if (format === 'm3u8' || format === 'playlist') {
-    try {
-      const upstreamRes = await fetch(localHlsUrl);
-      if (!upstreamRes.ok) return res.status(502).send('Stream not available');
-      let m3u8Content = await upstreamRes.text();
+  try {
+    // Step 1: Fetch upstream/local playlist to inspect if Master Playlist or Media Playlist
+    const upstreamRes = await fetch(localHlsUrl);
+    if (!upstreamRes.ok) {
+      return res.status(502).send('Stream not available');
+    }
+
+    let playlistText = await upstreamRes.text();
+    let targetPlaylistUrl = localHlsUrl;
+    let isMaster = playlistText.includes('#EXT-X-STREAM-INF');
+
+    // Step 2: If Master Playlist, resolve to requested or best quality sub-playlist
+    if (isMaster) {
+      const lines = playlistText.split('\n');
+      const variants = [];
+      let currentVariant = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.startsWith('#EXT-X-STREAM-INF:')) {
+          const resMatch = line.match(/RESOLUTION=(\d+)x(\d+)/i);
+          const bwMatch = line.match(/BANDWIDTH=(\d+)/i);
+          const height = resMatch ? parseInt(resMatch[2], 10) : 0;
+          const bandwidth = bwMatch ? parseInt(bwMatch[1], 10) : 0;
+          currentVariant = { height, bandwidth };
+        } else if (line && !line.startsWith('#') && currentVariant) {
+          variants.push({
+            ...currentVariant,
+            url: line
+          });
+          currentVariant = null;
+        }
+      }
+
+      if (variants.length > 0) {
+        // Sort highest resolution/bandwidth first
+        variants.sort((a, b) => (b.height || b.bandwidth) - (a.height || a.bandwidth));
+
+        let selected = variants[0];
+        if (quality) {
+          const reqH = parseInt(quality, 10);
+          const match = variants.find(v => v.height === reqH);
+          if (match) selected = match;
+        }
+
+        let subUrl = selected.url;
+        if (!subUrl.startsWith('http')) {
+          const parsedBase = new URL(localHlsUrl);
+          if (subUrl.startsWith('/')) {
+            subUrl = `${parsedBase.origin}${subUrl}`;
+          } else {
+            const p = parsedBase.pathname.split('/');
+            p.pop();
+            subUrl = `${parsedBase.origin}${p.join('/')}/${subUrl}`;
+          }
+        }
+
+        targetPlaylistUrl = subUrl;
+        const subRes = await fetch(targetPlaylistUrl);
+        if (subRes.ok) {
+          playlistText = await subRes.text();
+        }
+      }
+    }
+
+    // Step 3: Handle M3U8 Playlist download (for 1DM, ADM, VLC, MX Player)
+    if (format === 'm3u8' || format === 'playlist') {
       const baseProxyUrl = `${protocol}://${host}/api/hls`;
-      m3u8Content = m3u8Content.replace(/\/api\/hls\?/g, `${baseProxyUrl}?`);
+      let m3u8Content = playlistText.replace(/\/api\/hls\?/g, `${baseProxyUrl}?`);
 
       res.setHeader('Content-Type', 'application/x-mpegurl; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.m3u8"`);
       return res.status(200).send(m3u8Content);
-    } catch (e) {
-      return res.status(500).send('Playlist fetch error');
     }
-  }
 
-  // 2. Direct MPEG-TS Stream (Plays natively on VLC, Android, iPhone, Windows Media Player)
-  if (format === 'ts' || format === 'direct') {
-    return streamDirectTs(localHlsUrl, safeFilename, res);
-  }
+    // Step 4: Handle Direct TS Stream (Binary segments concatenated)
+    if (format === 'ts' || format === 'direct') {
+      return streamDirectTs(targetPlaylistUrl, playlistText, safeFilename, res);
+    }
 
-  // 3. Default: Try FFmpeg if available, otherwise fallback to direct TS stream
-  try {
-    const ffmpeg = spawn('ffmpeg', [
-      '-i', localHlsUrl,
-      '-c', 'copy',
-      '-bsf:a', 'aac_adtstoasc',
-      '-f', 'mp4',
-      '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
-      'pipe:1'
-    ]);
+    // Step 5: MP4 via FFmpeg if available, with direct TS fallback
+    try {
+      const ffmpeg = spawn('ffmpeg', [
+        '-i', targetPlaylistUrl,
+        '-c', 'copy',
+        '-bsf:a', 'aac_adtstoasc',
+        '-f', 'mp4',
+        '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+        'pipe:1'
+      ]);
 
-    let spawned = false;
+      let spawned = false;
 
-    ffmpeg.stdout.once('data', () => {
-      spawned = true;
-      res.setHeader('Content-Type', 'video/mp4');
-      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
-      res.setHeader('Cache-Control', 'no-cache');
-    });
+      ffmpeg.stdout.once('data', () => {
+        spawned = true;
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.mp4"`);
+        res.setHeader('Cache-Control', 'no-cache');
+      });
 
-    ffmpeg.stdout.pipe(res);
+      ffmpeg.stdout.pipe(res);
 
-    ffmpeg.on('error', (err) => {
-      console.warn('[Download] FFmpeg unavailable on host/serverless, streaming direct TS video:', err.message);
+      ffmpeg.on('error', (err) => {
+        console.warn('[Download] FFmpeg spawn error, streaming direct TS video:', err.message);
+        if (!res.headersSent) {
+          streamDirectTs(targetPlaylistUrl, playlistText, safeFilename, res);
+        }
+      });
+
+      ffmpeg.on('close', (code) => {
+        if (code !== 0 && !res.headersSent) {
+          console.warn('[Download] FFmpeg exited with code', code, 'falling back to direct TS');
+          streamDirectTs(targetPlaylistUrl, playlistText, safeFilename, res);
+        }
+      });
+
+      req.on('close', () => {
+        try { ffmpeg.kill('SIGINT'); } catch (e) {}
+      });
+    } catch (err) {
       if (!res.headersSent) {
-        streamDirectTs(localHlsUrl, safeFilename, res);
+        streamDirectTs(targetPlaylistUrl, playlistText, safeFilename, res);
       }
-    });
+    }
 
-    req.on('close', () => {
-      try { ffmpeg.kill('SIGINT'); } catch (e) {}
-    });
   } catch (err) {
+    console.error('[Download] Master resolution error:', err);
     if (!res.headersSent) {
-      streamDirectTs(localHlsUrl, safeFilename, res);
+      return res.status(500).send('Stream download error: ' + err.message);
     }
   }
 };
 
-// Stream segments directly as a single .ts video file
-async function streamDirectTs(playlistUrl, safeFilename, res) {
+// Stream segments directly as a single playable .ts video file
+async function streamDirectTs(playlistUrl, m3u8Text, safeFilename, res) {
   try {
-    const plRes = await fetch(playlistUrl);
-    if (!plRes.ok) return res.status(502).send('Stream unavailable');
-
-    const m3u8Text = await plRes.text();
     const lines = m3u8Text.split('\n');
     const segmentUrls = [];
-
-    const baseUrl = playlistUrl.substring(0, playlistUrl.lastIndexOf('/') + 1);
+    const mediaBaseUrl = new URL(playlistUrl);
 
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed && !trimmed.startsWith('#')) {
-        const fullUrl = trimmed.startsWith('http') ? trimmed : `${baseUrl}${trimmed}`;
-        segmentUrls.push(fullUrl);
+        let segFull = trimmed;
+        if (!segFull.startsWith('http')) {
+          if (segFull.startsWith('/')) {
+            segFull = `${mediaBaseUrl.origin}${segFull}`;
+          } else {
+            const p = mediaBaseUrl.pathname.split('/');
+            p.pop();
+            segFull = `${mediaBaseUrl.origin}${p.join('/')}/${segFull}`;
+          }
+        }
+        segmentUrls.push(segFull);
       }
     }
 
     if (segmentUrls.length === 0) {
-      return res.status(404).send('No video segments found');
+      return res.status(404).send('No video segments found in stream');
     }
 
     res.setHeader('Content-Type', 'video/mp2t');
@@ -120,13 +197,13 @@ async function streamDirectTs(playlistUrl, safeFilename, res) {
           res.write(Buffer.from(buf));
         }
       } catch (e) {
-        // continue with next segment
+        // Continue downloading next segment
       }
     }
     res.end();
   } catch (err) {
     if (!res.headersSent) {
-      res.status(500).send('Stream download error');
+      res.status(500).send('Direct stream download error: ' + err.message);
     }
   }
 }
