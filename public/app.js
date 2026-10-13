@@ -232,6 +232,15 @@ function renderContinueWatchingSection() {
   }).join('');
 }
 
+window.slideHistoryCarousel = function(direction) {
+  const container = document.getElementById('historyCardsContainer');
+  if (!container) return;
+  const card = container.querySelector('.continue-card');
+  const cardWidth = card ? (card.offsetWidth + 16) : 280;
+  const delta = direction === 'left' ? -cardWidth * 2 : cardWidth * 2;
+  container.scrollBy({ left: delta, behavior: 'smooth' });
+};
+
 // ==================================================================
 // 1. HOME PAGE
 // ==================================================================
@@ -1045,7 +1054,7 @@ function setupPlayerOverlaysAndGestures(playerHost, video) {
     rotBtn.className = 'fs-rotate-btn';
     rotBtn.id = 'fsRotateBtn';
     rotBtn.title = 'Rotate Screen Orientation (Landscape/Portrait)';
-    rotBtn.innerHTML = `<i class="fa-solid fa-rotate"></i>`;
+    rotBtn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i>`;
     rotBtn.style.display = 'none';
     rotBtn.onclick = (e) => toggleScreenRotation(e);
     playerHost.appendChild(rotBtn);
@@ -1373,7 +1382,7 @@ function toggleScreenRotation(e) {
       }).catch(() => {});
     }
   } else {
-    showPlayerHud('Screen Rotation Toggled', 'fa-rotate');
+    showPlayerHud('Screen Rotation Toggled', 'fa-arrows-rotate');
   }
 }
 
