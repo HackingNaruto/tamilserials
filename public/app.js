@@ -1297,29 +1297,7 @@ function attachDrawerSwipeGestures(host, drawer) {
   let touchStartY = 0;
   let touchStartX = 0;
 
-  // Swipe UP on player host opens drawer
-  host.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches.length === 1) {
-      touchStartY = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
-    }
-  }, { passive: true });
-
-  host.addEventListener('touchend', (e) => {
-    if (e.changedTouches && e.changedTouches.length === 1) {
-      const endY = e.changedTouches[0].clientY;
-      const endX = e.changedTouches[0].clientX;
-      const deltaY = touchStartY - endY;
-      const deltaX = Math.abs(touchStartX - endX);
-
-      // Upwards swipe > 45px and predominantly vertical
-      if (deltaY > 45 && deltaX < 80) {
-        openFsEpisodesDrawer();
-      }
-    }
-  }, { passive: true });
-
-  // Swipe DOWN on drawer closes drawer
+  // Swipe DOWN on drawer closes drawer sheet
   drawer.addEventListener('touchstart', (e) => {
     if (e.touches && e.touches.length === 1) {
       touchStartY = e.touches[0].clientY;
@@ -1494,8 +1472,7 @@ function attachPlayerGestures(host, video) {
   let currentBrightness = 1.0;
   let startVolume = 1.0;
   let isSwiping = false;
-  let swipeType = '';
-  let rightSwipeTriggered = false;
+  let swipeType = ''; // 'h' (seek), 'v_bright' (brightness), 'v_vol' (volume), 'bottom_sheet' (episodes)
 
   let startPinchDist = 0;
   let initialScale = 1.0;
@@ -1598,7 +1575,6 @@ function attachPlayerGestures(host, video) {
       startVolume = typeof video.volume === 'number' ? video.volume : 1.0;
       isSwiping = false;
       swipeType = '';
-      rightSwipeTriggered = false;
 
       // Start 2X Fast-Forward Hold Timer (400ms hold)
       if (holdTimer) clearTimeout(holdTimer);
@@ -1626,7 +1602,7 @@ function attachPlayerGestures(host, video) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.hypot(dx, dy);
-      currentScale = Math.max(0.7, Math.min(3.5, initialScale * (dist / startPinchDist)));
+      currentScale = Math.max(0.7, Math.min(3.0, initialScale * (dist / startPinchDist)));
       video.style.transform = `scale(${currentScale})`;
       video.style.objectFit = 'contain';
       showPlayerHud(`Zoom ${currentScale.toFixed(2)}x`, 'fa-magnifying-glass');
@@ -1639,6 +1615,7 @@ function attachPlayerGestures(host, video) {
     const curY = e.touches[0].clientY;
     const deltaX = curX - touchStartX;
     const deltaY = touchStartY - curY; // swipe up is positive
+    const rect = host.getBoundingClientRect();
 
     // If moved more than 14px, cancel 2X hold timer
     if (Math.hypot(deltaX, deltaY) > 14) {
@@ -1648,17 +1625,31 @@ function attachPlayerGestures(host, video) {
       }
     }
 
-    const rect = host.getBoundingClientRect();
-
+    // Determine gesture type once per gesture
     if (!swipeType) {
-      if (Math.abs(deltaX) > 18 && Math.abs(deltaX) > Math.abs(deltaY)) {
-        swipeType = 'h';
+      // Bottom Sheet Check: If touch started in bottom 65px and swipes up predominantly
+      if (touchStartY > rect.bottom - 65 && deltaY > 18 && Math.abs(deltaY) > Math.abs(deltaX)) {
+        swipeType = 'bottom_sheet';
+      } else if (Math.abs(deltaX) > 18 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        swipeType = 'h'; // Horizontal seek
       } else if (Math.abs(deltaY) > 18) {
-        swipeType = 'v';
+        if (touchStartX < rect.left + (rect.width / 2)) {
+          swipeType = 'v_bright'; // Left half vertical -> Brightness
+        } else {
+          swipeType = 'v_vol'; // Right half vertical -> Volume ONLY!
+        }
       }
     }
 
-    if (swipeType === 'h') {
+    if (swipeType === 'bottom_sheet') {
+      isSwiping = true;
+      if (e.cancelable) e.preventDefault();
+      if (deltaY > 50) {
+        openFsEpisodesDrawer();
+        showPlayerHud('More Episodes', 'fa-layer-group');
+        swipeType = 'bottom_sheet_opened'; // trigger once per gesture
+      }
+    } else if (swipeType === 'h') {
       isSwiping = true;
       if (e.cancelable) e.preventDefault();
       const duration = video.duration || 1200;
@@ -1666,34 +1657,25 @@ function attachPlayerGestures(host, video) {
       const targetTime = Math.max(0, Math.min(duration, startVideoTime + seekAmount));
       video.currentTime = targetTime;
       showPlayerHud(`${formatTime(targetTime)} / ${formatTime(duration)}`, 'fa-clock');
-    } else if (swipeType === 'v') {
+    } else if (swipeType === 'v_bright') {
       isSwiping = true;
       if (e.cancelable) e.preventDefault();
-
-      if (touchStartX < rect.left + (rect.width / 2)) {
-        // Left half: Brightness control
-        const brightDelta = deltaY / 250;
-        currentBrightness = Math.max(0.2, Math.min(2.0, startBrightness + brightDelta));
-        video.style.filter = `brightness(${currentBrightness})`;
-        const pct = Math.round((currentBrightness / 2.0) * 100);
-        showPlayerHud(`Brightness ${pct}%`, 'fa-sun');
-      } else {
-        // Right half: Vertical Swipe Up -> Episodes Drawer, Swipe Down -> Close Drawer, or Volume
-        if (deltaY > 55 && !rightSwipeTriggered) {
-          rightSwipeTriggered = true;
-          openFsEpisodesDrawer();
-          showPlayerHud('More Episodes', 'fa-list-ul');
-        } else if (deltaY < -55 && !rightSwipeTriggered) {
-          rightSwipeTriggered = true;
-          closeFsEpisodesDrawer();
-        } else if (!rightSwipeTriggered) {
-          const volDelta = deltaY / 300;
-          const newVol = Math.max(0, Math.min(1, startVolume + volDelta));
-          video.volume = newVol;
-          const volPct = Math.round(newVol * 100);
-          showPlayerHud(`Volume ${volPct}%`, newVol > 0 ? 'fa-volume-high' : 'fa-volume-xmark');
-        }
-      }
+      const brightDelta = deltaY / 220;
+      currentBrightness = Math.max(0.2, Math.min(2.0, startBrightness + brightDelta));
+      video.style.filter = `brightness(${currentBrightness})`;
+      const pct = Math.round((currentBrightness / 2.0) * 100);
+      showPlayerHud(`Brightness ${pct}%`, 'fa-sun');
+    } else if (swipeType === 'v_vol') {
+      isSwiping = true;
+      if (e.cancelable) e.preventDefault();
+      const volDelta = deltaY / 220;
+      const newVol = Math.max(0, Math.min(1, startVolume + volDelta));
+      video.volume = newVol;
+      const volPct = Math.round(newVol * 100);
+      let volIcon = 'fa-volume-high';
+      if (newVol === 0) volIcon = 'fa-volume-xmark';
+      else if (newVol < 0.5) volIcon = 'fa-volume-low';
+      showPlayerHud(`Volume ${volPct}%`, volIcon);
     }
   }, { passive: false });
 
@@ -1722,6 +1704,11 @@ function attachPlayerGestures(host, video) {
     }
 
     if (e.changedTouches && e.changedTouches.length === 1) {
+      const endX = e.changedTouches[0].clientX;
+      const rect = host.getBoundingClientRect();
+      const relX = endX - rect.left;
+      const widthPct = relX / rect.width;
+
       tapCount++;
       if (tapCount === 1) {
         tapTimeout = setTimeout(() => {
@@ -1732,8 +1719,22 @@ function attachPlayerGestures(host, video) {
       } else if (tapCount === 2) {
         clearTimeout(tapTimeout);
         tapCount = 0;
-        // Double Tap: Toggle Play / Pause
-        toggleVideoPlayPause();
+
+        // Double Tap Smart Zones:
+        // Left 33%: Rewind -10s
+        // Center 34%: Pause / Play toggle
+        // Right 33%: Fast Forward +10s
+        if (widthPct < 0.33) {
+          video.currentTime = Math.max(0, video.currentTime - 10);
+          triggerGestureRipple('left');
+          showPlayerHud('-10s Rewind', 'fa-backward-step');
+        } else if (widthPct > 0.67) {
+          video.currentTime = Math.min(video.duration || 9999, video.currentTime + 10);
+          triggerGestureRipple('right');
+          showPlayerHud('+10s Forward', 'fa-forward-step');
+        } else {
+          toggleVideoPlayPause();
+        }
       }
     }
   }, { passive: true });
@@ -1753,7 +1754,34 @@ function attachPlayerGestures(host, video) {
     tapCount = 0;
   });
 
-  // Desktop Mouse Support (Hold for 2X, Single Click for Controls, Double Click for Pause/Play)
+  // Desktop Mouse Wheel Support (Scroll Left = Brightness, Scroll Right = Volume)
+  host.addEventListener('wheel', (e) => {
+    if (isExcluded(e.target) || isPlayerControlsLocked) return;
+    e.preventDefault();
+    const rect = host.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const direction = e.deltaY < 0 ? 1 : -1; // up = positive, down = negative
+
+    if (relX < rect.width / 2) {
+      // Left side: Brightness +/- 5%
+      startBrightness = Math.max(0.2, Math.min(2.0, (startBrightness || 1.0) + (direction * 0.08)));
+      video.style.filter = `brightness(${startBrightness})`;
+      const pct = Math.round((startBrightness / 2.0) * 100);
+      showPlayerHud(`Brightness ${pct}%`, 'fa-sun');
+    } else {
+      // Right side: Volume +/- 5%
+      const curVol = typeof video.volume === 'number' ? video.volume : 1.0;
+      const newVol = Math.max(0, Math.min(1, curVol + (direction * 0.05)));
+      video.volume = newVol;
+      const volPct = Math.round(newVol * 100);
+      let volIcon = 'fa-volume-high';
+      if (newVol === 0) volIcon = 'fa-volume-xmark';
+      else if (newVol < 0.5) volIcon = 'fa-volume-low';
+      showPlayerHud(`Volume ${volPct}%`, volIcon);
+    }
+  }, { passive: false });
+
+  // Desktop Mouse Support (Hold for 2X, Single Click for Controls, Double Click for Pause/Play / Seek)
   let mouseHoldTimer = null;
   let isMouseHolding2x = false;
   let clickCount = 0;
@@ -1789,6 +1817,10 @@ function attachPlayerGestures(host, video) {
     if (Date.now() - lastTouchEndTime < 600) return;
     if (isMouseHolding2x) return;
 
+    const rect = host.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const widthPct = relX / rect.width;
+
     clickCount++;
     if (clickCount === 1) {
       clickTimeout = setTimeout(() => {
@@ -1798,7 +1830,18 @@ function attachPlayerGestures(host, video) {
     } else if (clickCount === 2) {
       clearTimeout(clickTimeout);
       clickCount = 0;
-      toggleVideoPlayPause();
+
+      if (widthPct < 0.33) {
+        video.currentTime = Math.max(0, video.currentTime - 10);
+        triggerGestureRipple('left');
+        showPlayerHud('-10s Rewind', 'fa-backward-step');
+      } else if (widthPct > 0.67) {
+        video.currentTime = Math.min(video.duration || 9999, video.currentTime + 10);
+        triggerGestureRipple('right');
+        showPlayerHud('+10s Forward', 'fa-forward-step');
+      } else {
+        toggleVideoPlayPause();
+      }
     }
   });
 }
@@ -2250,10 +2293,11 @@ function toggleCinemaLights() {
   }
 }
 
-// Global OTT Keyboard Shortcuts (L for Lights, T for Theater Mode, E for Episodes Drawer)
+// Global OTT Keyboard Shortcuts for Desktop / Laptop
 document.addEventListener('keydown', (e) => {
   if (['input', 'textarea', 'select'].includes((document.activeElement.tagName || '').toLowerCase())) return;
   if (!document.getElementById('watchPlayerContainer')) return;
+  const video = document.getElementById('hlsVideo') || document.querySelector('.watch-container video');
 
   if (e.key === 'l' || e.key === 'L') {
     e.preventDefault();
@@ -2264,8 +2308,64 @@ document.addEventListener('keydown', (e) => {
   } else if (e.key === 'e' || e.key === 'E') {
     e.preventDefault();
     toggleFsEpisodesDrawer();
+  } else if (e.key === 'd' || e.key === 'D') {
+    e.preventDefault();
+    openDownloadModal();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    if (plyrInstance && plyrInstance.fullscreen) {
+      plyrInstance.fullscreen.toggle();
+    }
+  } else if (e.key === 'm' || e.key === 'M') {
+    if (video) {
+      video.muted = !video.muted;
+      showPlayerHud(video.muted ? 'Muted' : 'Unmuted', video.muted ? 'fa-volume-xmark' : 'fa-volume-high');
+    }
+  } else if (e.key === ' ' || e.key === 'k' || e.key === 'K') {
+    e.preventDefault();
+    if (video) {
+      if (video.paused) {
+        if (plyrInstance && typeof plyrInstance.play === 'function') plyrInstance.play().catch(() => video.play());
+        else video.play();
+        showPlayerHud('Play ▶', 'fa-play');
+      } else {
+        if (plyrInstance && typeof plyrInstance.pause === 'function') plyrInstance.pause();
+        else video.pause();
+        showPlayerHud('Pause ⏸', 'fa-pause');
+      }
+    }
+  } else if (e.key === 'ArrowLeft' || e.key === 'j' || e.key === 'J') {
+    if (video) {
+      e.preventDefault();
+      video.currentTime = Math.max(0, video.currentTime - 10);
+      showPlayerHud('-10s Rewind', 'fa-backward-step');
+    }
+  } else if (e.key === 'ArrowRight' || e.key === 'l') {
+    if (video) {
+      e.preventDefault();
+      video.currentTime = Math.min(video.duration || 9999, video.currentTime + 10);
+      showPlayerHud('+10s Forward', 'fa-forward-step');
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (video) {
+      const cur = typeof video.volume === 'number' ? video.volume : 1.0;
+      video.volume = Math.min(1, cur + 0.1);
+      const pct = Math.round(video.volume * 100);
+      showPlayerHud(`Volume ${pct}%`, 'fa-volume-high');
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (video) {
+      const cur = typeof video.volume === 'number' ? video.volume : 1.0;
+      video.volume = Math.max(0, cur - 0.1);
+      const pct = Math.round(video.volume * 100);
+      showPlayerHud(`Volume ${pct}%`, video.volume === 0 ? 'fa-volume-xmark' : 'fa-volume-low');
+    }
   } else if (e.key === 'Escape') {
     closeFsEpisodesDrawer();
+    const dlModal = document.getElementById('downloadModal');
+    if (dlModal) dlModal.classList.remove('show');
   }
 });
 
