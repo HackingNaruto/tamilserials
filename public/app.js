@@ -1629,6 +1629,8 @@ function attachPlayerGestures(host, video) {
   let tapCount = 0;
   let tapTimeout = null;
   let lastTouchEndTime = 0;
+  let wasControlsHiddenAtStart = false;
+  let wasDesktopControlsHiddenAtStart = false;
 
   // 2X Fast-Forward Hold State
   let holdTimer = null;
@@ -1663,6 +1665,12 @@ function attachPlayerGestures(host, video) {
     const playerHost = document.getElementById('videoPlayerFrame');
     const plyrContainer = playerHost ? (playerHost.querySelector('.plyr') || playerHost) : null;
     if (!plyrContainer) return;
+
+    // Disarm Plyr's internal timer so Plyr does not hide controls after 2-3s
+    if (plyrInstance && plyrInstance.timers && plyrInstance.timers.controls) {
+      clearTimeout(plyrInstance.timers.controls);
+      plyrInstance.timers.controls = null;
+    }
 
     plyrContainer.classList.remove('plyr--hide-controls');
     const rotateBtn = document.getElementById('fsRotateBtn');
@@ -1752,6 +1760,12 @@ function attachPlayerGestures(host, video) {
   // Touch Start
   host.addEventListener('touchstart', (e) => {
     if (isExcluded(e.target)) return;
+
+    if (plyrInstance && plyrInstance.timers && plyrInstance.timers.controls) {
+      clearTimeout(plyrInstance.timers.controls);
+      plyrInstance.timers.controls = null;
+    }
+    wasControlsHiddenAtStart = !isPlayerControlsVisible();
 
     if (isPlayerControlsLocked) {
       if (e.target.id !== 'fsLockBtn' && !e.target.closest('#fsLockBtn')) {
@@ -1862,7 +1876,7 @@ function attachPlayerGestures(host, video) {
     } else if (swipeType === 'h') {
       isSwiping = true;
       if (e.cancelable) e.preventDefault();
-      const duration = video.duration || 1200;
+      const duration = (playerTargetDuration > 0 ? playerTargetDuration : (video.duration || 1200));
       const seekAmount = (deltaX / rect.width) * 120; // 120s full span
       const targetTime = Math.max(0, Math.min(duration, startVideoTime + seekAmount));
       video.currentTime = targetTime;
@@ -1923,9 +1937,14 @@ function attachPlayerGestures(host, video) {
       if (tapCount === 1) {
         tapTimeout = setTimeout(() => {
           tapCount = 0;
-          // Single Tap: Toggle Controller overlay
-          togglePlayerControls();
-        }, 280);
+          // Single Tap: If controls were hidden at touchstart, reveal them for full 7s.
+          // If controls were already open, tap on blank area hides them.
+          if (wasControlsHiddenAtStart) {
+            showPlayerControls(7000);
+          } else {
+            hidePlayerControls();
+          }
+        }, 260);
       } else if (tapCount === 2) {
         clearTimeout(tapTimeout);
         tapCount = 0;
@@ -1968,7 +1987,8 @@ function attachPlayerGestures(host, video) {
   // Keep controls alive on mouse interaction
   host.addEventListener('mousemove', (e) => {
     if (!isExcluded(e.target) && !isPlayerControlsLocked) {
-      showPlayerControls(4000);
+      if (Date.now() - lastTouchEndTime < 600) return;
+      showPlayerControls(7000);
     }
   });
 
@@ -2015,6 +2035,12 @@ function attachPlayerGestures(host, video) {
     if (isExcluded(e.target) || isPlayerControlsLocked || e.button !== 0) return;
     if (Date.now() - lastTouchEndTime < 600) return;
 
+    if (plyrInstance && plyrInstance.timers && plyrInstance.timers.controls) {
+      clearTimeout(plyrInstance.timers.controls);
+      plyrInstance.timers.controls = null;
+    }
+    wasDesktopControlsHiddenAtStart = !isPlayerControlsVisible();
+
     if (mouseHoldTimer) clearTimeout(mouseHoldTimer);
     mouseHoldTimer = setTimeout(() => {
       isMouseHolding2x = true;
@@ -2049,7 +2075,11 @@ function attachPlayerGestures(host, video) {
     if (clickCount === 1) {
       clickTimeout = setTimeout(() => {
         clickCount = 0;
-        togglePlayerControls();
+        if (wasDesktopControlsHiddenAtStart) {
+          showPlayerControls(7000);
+        } else {
+          hidePlayerControls();
+        }
       }, 260);
     } else if (clickCount === 2) {
       clearTimeout(clickTimeout);
@@ -2281,6 +2311,8 @@ function switchServer(idx, btnEl) {
   const container = document.getElementById('videoPlayerFrame');
   if (!container) return;
 
+  playerTargetDuration = 0;
+
   // Clean up any existing Plyr & Hls instances
   if (plyrInstance) {
     try { plyrInstance.destroy(); } catch(e) {}
@@ -2351,6 +2383,17 @@ function switchServer(idx, btnEl) {
       hls.loadSource(server.url);
       hls.attachMedia(video);
 
+      // Duration capture from HLS level metadata
+      hls.on(Hls.Events.LEVEL_LOADED, function(event, data) {
+        if (data && data.details && typeof data.details.totalduration === 'number' && data.details.totalduration > 0) {
+          syncPlayerDuration(video, hls);
+        }
+      });
+
+      video.addEventListener('loadedmetadata', () => syncPlayerDuration(video, hls));
+      video.addEventListener('durationchange', () => syncPlayerDuration(video, hls));
+      video.addEventListener('canplay', () => syncPlayerDuration(video, hls));
+
       hls.on(Hls.Events.MANIFEST_PARSED, function() {
         // Read detected stream quality levels from HLS
         const availableQualities = hls.levels ? hls.levels.map(l => l.height).filter(h => typeof h === 'number' && h > 0) : [];
@@ -2391,6 +2434,25 @@ function switchServer(idx, btnEl) {
         const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
         setupPlayerOverlaysAndGestures(plyrContainer, video);
 
+        // Disarm Plyr internal auto-hide timer and enforce our persistent 7-second timer
+        plyrInstance.toggleControls = function(force) {
+          if (force === true) {
+            showPlayerControls(7000);
+          }
+        };
+        plyrInstance.on('controlsshown', () => {
+          if (plyrInstance.timers && plyrInstance.timers.controls) {
+            clearTimeout(plyrInstance.timers.controls);
+            plyrInstance.timers.controls = null;
+          }
+          showPlayerControls(7000);
+        });
+        plyrInstance.on('controlshidden', () => {
+          if (video && video.paused) {
+            showPlayerControls(0);
+          }
+        });
+
         plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
         plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
 
@@ -2400,11 +2462,25 @@ function switchServer(idx, btnEl) {
           showToast(`Resumed playback at ${formatTime(savedTime)}`, 'fa-clock-rotate-left');
         }
 
-        // Save progress periodically to localStorage & Watch History
+        // Save progress periodically to localStorage & Watch History & force duration sync
         video.addEventListener('timeupdate', () => {
           if (video.currentTime > 5 && !video.ended) {
             localStorage.setItem(resumeKey, video.currentTime);
-            saveToWatchHistory(currentEpisode, video.currentTime, video.duration);
+            saveToWatchHistory(currentEpisode, video.currentTime, playerTargetDuration || video.duration);
+          }
+          if (playerTargetDuration > 0) {
+            const formattedDur = formatTime(playerTargetDuration);
+            const durationEls = document.querySelectorAll('.plyr__time--duration');
+            durationEls.forEach(el => {
+              if (el.innerText !== formattedDur) {
+                el.removeAttribute('hidden');
+                el.innerText = formattedDur;
+                el.style.display = 'inline-block';
+                el.style.visibility = 'visible';
+              }
+            });
+          } else {
+            syncPlayerDuration(video, hls);
           }
         });
 
@@ -2439,6 +2515,45 @@ function switchServer(idx, btnEl) {
       plyrInstance = new Plyr(video, plyrOptions);
       const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
       setupPlayerOverlaysAndGestures(plyrContainer, video);
+
+      plyrInstance.toggleControls = function(force) {
+        if (force === true) showPlayerControls(7000);
+      };
+      plyrInstance.on('controlsshown', () => {
+        if (plyrInstance.timers && plyrInstance.timers.controls) {
+          clearTimeout(plyrInstance.timers.controls);
+          plyrInstance.timers.controls = null;
+        }
+        showPlayerControls(7000);
+      });
+      plyrInstance.on('controlshidden', () => {
+        if (video && video.paused) showPlayerControls(0);
+      });
+
+      video.addEventListener('loadedmetadata', () => syncPlayerDuration(video, null));
+      video.addEventListener('durationchange', () => syncPlayerDuration(video, null));
+      video.addEventListener('canplay', () => syncPlayerDuration(video, null));
+      video.addEventListener('timeupdate', () => {
+        if (video.currentTime > 5 && !video.ended) {
+          localStorage.setItem(resumeKey, video.currentTime);
+          saveToWatchHistory(currentEpisode, video.currentTime, playerTargetDuration || video.duration);
+        }
+        if (playerTargetDuration > 0) {
+          const formattedDur = formatTime(playerTargetDuration);
+          const durationEls = document.querySelectorAll('.plyr__time--duration');
+          durationEls.forEach(el => {
+            if (el.innerText !== formattedDur) {
+              el.removeAttribute('hidden');
+              el.innerText = formattedDur;
+              el.style.display = 'inline-block';
+              el.style.visibility = 'visible';
+            }
+          });
+        } else {
+          syncPlayerDuration(video, null);
+        }
+      });
+
       plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
       plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
       if (savedTime > 15) video.currentTime = savedTime;
@@ -2450,11 +2565,52 @@ function switchServer(idx, btnEl) {
     plyrInstance = new Plyr(video, {
       controls: ['play-large', 'restart', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
       settings: ['speed'],
+      hideControls: false,
       clickToPlay: false,
+      toggleControls: false,
       seekTime: 10
     });
     const plyrContainer = plyrInstance.elements ? plyrInstance.elements.container : container;
     setupPlayerOverlaysAndGestures(plyrContainer, video);
+
+    plyrInstance.toggleControls = function(force) {
+      if (force === true) showPlayerControls(7000);
+    };
+    plyrInstance.on('controlsshown', () => {
+      if (plyrInstance.timers && plyrInstance.timers.controls) {
+        clearTimeout(plyrInstance.timers.controls);
+        plyrInstance.timers.controls = null;
+      }
+      showPlayerControls(7000);
+    });
+    plyrInstance.on('controlshidden', () => {
+      if (video && video.paused) showPlayerControls(0);
+    });
+
+    video.addEventListener('loadedmetadata', () => syncPlayerDuration(video, null));
+    video.addEventListener('durationchange', () => syncPlayerDuration(video, null));
+    video.addEventListener('canplay', () => syncPlayerDuration(video, null));
+    video.addEventListener('timeupdate', () => {
+      if (video.currentTime > 5 && !video.ended) {
+        localStorage.setItem(resumeKey, video.currentTime);
+        saveToWatchHistory(currentEpisode, video.currentTime, playerTargetDuration || video.duration);
+      }
+      if (playerTargetDuration > 0) {
+        const formattedDur = formatTime(playerTargetDuration);
+        const durationEls = document.querySelectorAll('.plyr__time--duration');
+        durationEls.forEach(el => {
+          if (el.innerText !== formattedDur) {
+            el.removeAttribute('hidden');
+            el.innerText = formattedDur;
+            el.style.display = 'inline-block';
+            el.style.visibility = 'visible';
+          }
+        });
+      } else {
+        syncPlayerDuration(video, null);
+      }
+    });
+
     plyrInstance.on('enterfullscreen', () => handleFullscreenChange());
     plyrInstance.on('exitfullscreen', () => handleFullscreenChange());
     if (savedTime > 15) video.currentTime = savedTime;
@@ -2468,10 +2624,67 @@ function switchServer(idx, btnEl) {
   }
 }
 
+let playerTargetDuration = 0;
+
+function syncPlayerDuration(video, hlsInstance) {
+  if (!video) return;
+  let dur = 0;
+
+  // 1. Direct video element duration if valid & finite
+  if (typeof video.duration === 'number' && isFinite(video.duration) && video.duration > 0) {
+    dur = video.duration;
+  }
+
+  // 2. HLS.js level details totalduration
+  const hls = hlsInstance || window._currentHls;
+  if ((!dur || dur <= 0) && hls && hls.levels && hls.levels.length > 0) {
+    const activeLevel = hls.levels[hls.currentLevel] || hls.levels[0];
+    if (activeLevel && activeLevel.details && typeof activeLevel.details.totalduration === 'number' && activeLevel.details.totalduration > 0) {
+      dur = activeLevel.details.totalduration;
+    }
+  }
+
+  // 3. Fallback to currentEpisode if available
+  if ((!dur || dur <= 0) && window.currentEpisode && typeof window.currentEpisode.duration === 'number' && window.currentEpisode.duration > 0) {
+    dur = window.currentEpisode.duration;
+  }
+
+  if (dur > 0 && isFinite(dur)) {
+    playerTargetDuration = dur;
+
+    if (plyrInstance) {
+      try {
+        plyrInstance.config.duration = dur;
+        if (plyrInstance.elements && plyrInstance.elements.inputs && plyrInstance.elements.inputs.seek) {
+          plyrInstance.elements.inputs.seek.setAttribute('aria-valuemax', dur);
+          plyrInstance.elements.inputs.seek.max = dur;
+        }
+      } catch (e) {}
+    }
+
+    const formattedDur = formatTime(dur);
+    const durationEls = document.querySelectorAll('.plyr__time--duration');
+    durationEls.forEach(el => {
+      el.removeAttribute('hidden');
+      el.innerText = formattedDur;
+      el.style.display = 'inline-block';
+      el.style.visibility = 'visible';
+    });
+  }
+}
+
 function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
+  if (typeof seconds !== 'number' || isNaN(seconds) || !isFinite(seconds) || seconds <= 0) {
+    return '00:00';
+  }
+  const totalSecs = Math.max(0, Math.floor(seconds));
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = totalSecs % 60;
+  if (h > 0) {
+    return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+  return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
 }
 
 // Countdown overlay and auto-navigate to Next Episode

@@ -738,6 +738,14 @@ body.cinema-lights-off .episode-info-card:hover {
   bottom: 0 !important;
 }
 
+/* Ensure Plyr total duration is ALWAYS visible and crisp */
+.plyr__time--duration,
+.plyr__time--duration[hidden] {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* Server Switcher Bar */
 .server-bar {
   background: #14161f;
@@ -1455,13 +1463,17 @@ body.cinema-lights-off .episode-info-card:hover {
     color: #ffffff !important;
   }
 
-  .plyr__controls .plyr__time--duration {
+  .plyr__controls .plyr__time--duration,
+  .plyr__controls .plyr__time--duration[hidden] {
     order: 4 !important;
     padding: 0 6px 0 0 !important;
     font-size: 0.8rem !important;
     font-weight: 600 !important;
     color: rgba(255, 255, 255, 0.75) !important;
     margin-right: auto !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   .plyr__controls .plyr__time--current::after {
